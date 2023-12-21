@@ -1,7 +1,13 @@
 # IntrepidEyeTracking
-Two sets of wrapper functions with identical names, purposes and output. One works with the EyeLink and one works with the LiveTrack Lightning.
 
-What are the things we need?
+An object that implements some eye tracking functionality for the EyeLink, the LiveTrack Lightning, as well as a debug mode using the mouse.
+
+The object will have a few properties:
+- which eye-tracker mode to use
+- toggle for tracking each eye
+- window for accepting a fixation
+
+And it should have a few methods to do things:
 
 At the start that would be:
 
@@ -24,4 +30,3 @@ Possibly at the end of the experiment, not sure though:
 
 - IETshutdown()
 
-Making a set of functions assumes that we are not using any kinds of objects.
