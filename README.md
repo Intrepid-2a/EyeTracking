@@ -7,6 +7,11 @@ The object will have a few properties:
 - toggle for tracking each eye
 - window for accepting a fixation
 
+These properties can be set when initializing the object, but there should be methods to change them as well:
+- setEyetracker()
+- trackEyes()
+- setFixationWindow()
+
 And it should have a few methods to do things:
 
 At the start that would be:
