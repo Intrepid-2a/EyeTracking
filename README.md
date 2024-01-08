@@ -1,4 +1,4 @@
-# IntrepidEyeTracking
+# Intrepid 2a EyeTracking
 
 An object that implements some eye tracking functionality for the EyeLink, the LiveTrack Lightning, as well as a debug mode using the mouse.
 
