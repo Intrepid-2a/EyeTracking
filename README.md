@@ -11,22 +11,22 @@ And it should have a few methods to do things:
 
 At the start that would be:
 
-- IETinitialize()
-- IETcalibrate()
-- IETsavecalibration()
+- initialize()
+- calibrate()
+- savecalibration()
 
 While running the experiment, on a frame-by-frame basis:
 
-- IETlastsample()
-- IETtestfixation()
-- IETcomment()
+- lastsample()
+- testfixation()
+- comment()
 
 For data storage:
 
-- IETstartcollecting()
-- IETstopcollecting()
+- startcollecting()
+- stopcollecting()
 
 Possibly at the end of the experiment, not sure though:
 
-- IETshutdown()
+- shutdown()
 
