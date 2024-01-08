@@ -12,7 +12,7 @@ class EyeTracker:
 
     def setEyetracker(self, tracker):
         if isinstance(tracker, str):
-            if tracker in ['eyelink', 'livetrack']:
+            if tracker in ['eyelink', 'livetrack', 'mouse']:
                 self.tracker = tracker
             else:
                 raise Warning("unkown eye-tracker")
