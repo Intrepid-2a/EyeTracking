@@ -1,4 +1,4 @@
-# IntrepidEyeTracking
+# Intrepid 2a EyeTracking
 
 An object that implements some eye tracking functionality for the EyeLink, the LiveTrack Lightning, as well as a debug mode using the mouse.
 
@@ -7,26 +7,31 @@ The object will have a few properties:
 - toggle for tracking each eye
 - window for accepting a fixation
 
+These properties can be set when initializing the object, but there should be methods to change them as well:
+- setEyetracker()
+- trackEyes()
+- setFixationWindow()
+
 And it should have a few methods to do things:
 
 At the start that would be:
 
-- IETinitialize()
-- IETcalibrate()
-- IETsavecalibration()
+- initialize()
+- calibrate()
+- savecalibration()
 
 While running the experiment, on a frame-by-frame basis:
 
-- IETlastsample()
-- IETtestfixation()
-- IETcomment()
+- lastsample()
+- testfixation()
+- comment()
 
 For data storage:
 
-- IETstartcollecting()
-- IETstopcollecting()
+- startcollecting()
+- stopcollecting()
 
 Possibly at the end of the experiment, not sure though:
 
-- IETshutdown()
+- shutdown()
 
