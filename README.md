@@ -14,7 +14,6 @@ These properties can be set when initializing the object, but there should be me
 
 [implemented so far]
 
-
 And it should have a few methods to do things.
 
 At the start that would be:
