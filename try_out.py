@@ -10,4 +10,6 @@ myET = EyeTracker(tracker='mouse',
 
 myET.initialize()
 
+#myET.__np.sin(2) # this does not work
+
 mywin.close()

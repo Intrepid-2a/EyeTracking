@@ -7,10 +7,13 @@ The object will have a few properties:
 - toggle for tracking each eye
 - window for accepting a fixation
 
+It needs to be associated with a PsychoPy window as well.
+
 These properties can be set when initializing the object, but there should be methods to change them as well:
 - setEyetracker()
 - trackEyes()
 - setFixationWindow()
+- setPsychopyWindow()
 
 [implemented so far]
 
