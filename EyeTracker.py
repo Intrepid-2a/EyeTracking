@@ -3,6 +3,7 @@ import warnings
 import numbers
 
 # we will also need to import libraries for both eyetrackers
+# bit this will have to be done conditionally
 # this is for EyeLink devices:
 import pylink
 # this is for LiveTrack devices:
