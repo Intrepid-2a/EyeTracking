@@ -1,6 +1,9 @@
 import sys
 import warnings
 import numbers
+import numpy as np
+import time
+import math
 
 # to test if input objects are valid psychopy classes:
 import psychopy
@@ -30,18 +33,22 @@ class EyeTracker:
         self.trackEyes(trackEyes)
         self.setFixationWindow(fixationWindow)
         self.setPsychopyWindow(psychopyWindow)
+
+        # things below this comment are still up for change... depends a bit on how the EyeLink does things
+
+        # maybe these should be a property that has a function to set it?
+        self.calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
+
+        # the innner and outer calibration dot size can be changed later on, but the stimuli will have already been made...
+        self.fixDotInDeg  = 0.2 # inner circle
+        self.fixDotOutDeg = 1.0
+        self.cal_dot_o = visual.Circle(self.psychopyWindow,units='deg',radius=self.fixDotOutDeg/2,fillColor=[-1,-1,-1],lineWidth=0,pos=[0,0]) # outer circle
+        self.cal_dot_i = visual.Circle(self.psychopyWindow,units='deg',radius=self.fixDotInDeg/2,fillColor=[ 1, 1, 1],lineWidth=0,pos=[0,0]) # inner circle
+
+
+
         
-
-    def setEyetracker(self, tracker):
-        if isinstance(tracker, str):
-            if tracker in ['eyelink', 'livetrack', 'mouse']:
-
-                if tracker == 'eyelink':
-                    # set up the eyelink device here
-                    self.setupEyeLink()
-
-                if tracker == 'livetrack':
-                    # set up the livetrack device here
+import numpy as nplivetrack device here
                     self.setupLiveTrack()
 
                 if tracker == 'mouse':
@@ -103,8 +110,8 @@ class EyeTracker:
 
     def setupMouse(self):
         # this will be a psychopy mouse object
-        import numpy as np
-        self.__np = np
+        # import numpy as np
+        # self.__np = np
 
         # remap functions:
         self.initialize = self.__DM_initialize
@@ -146,6 +153,225 @@ class EyeTracker:
     # endregion
 
 
+    # functions to calibrate each device:
+    # region
+
+    def calibrate(self):
+        raise Warning("set eyetracker before calibrating it")
+
+    def __EL_calibrate(self):
+        print('calibrate EyeLink')
+
+    def __LT_calibrate(self):
+        print('calibrate livetrack')
+        np.random.shuffle(self.calibrationTargets)
+
+        # configure calibration:
+        setupDelay = 1000.0 # time before collecting any samples in ms
+        minDur = 300 # min fixation duration in ms
+        fixTimeout = 5  # timeout duration in seconds (point is skipped!)
+        fixThreshold = 5 # pixel window for all samples within a 'fixation'
+
+        ntargets = np.shape(self.calibrationTargets)[0]
+        tgtLocs = targetsDeg.astype(float) # make sure locations are floats
+
+        # show calibration on separate video window (not necessary):
+        # if self.useVideo:
+        #     print('Please align camera')
+        #     import LiveTrackGS
+        #     LiveTrackGS.VideoInit(0)
+        #     result= LiveTrackGS.VideoStart()
+        #     time.sleep(5)
+
+        # initialise LiveTrack
+        # LiveTrack.Init() # already done
+
+        self.LiveTrack.SetResultsTypeRaw() # stream raw data
+        self.LiveTrack.StartTracking() # buffer data to lib
+        [ width, height, sampleRate, offsetX, offsetY ] = self.LiveTrack.GetCaptureConfig() # estimate sample rate
+        fixDurSamples = round((float(minDur)/1000)*float(sampleRate)) # samples per fixation duration
+
+        self.LiveTrack.SetTracking(self.trackEyes[0], self.trackEyes[1]) # make sure we're only tracking the requires eyes
+        # print(self.LiveTrack.GetTracking()) # see what's being tracked
+
+        if trackEye[0]:
+            VectXL = [None] * ntargets
+            VectYL = [None] * ntargets
+            GlintXL = [None] * ntargets
+            GlintYL = [None] * ntargets
+        if trackEyes[1]:
+            VectXR = [None] * ntargets
+            VectYR = [None] * ntargets
+            GlintXR = [None] * ntargets
+            GlintYR = [None] * ntargets
+
+        visual.TextStim(self.psychopyWindow,'calibration', height = 1,wrapWidth=30, color = 'black').draw()
+        self.psychopyWindow.flip()
+        # time.sleep(0.5) # is this necessary?
+
+        for target_idx in range(ntargets):
+            # plot a circle at the fixation position.
+            self.cal_dot_o.pos = targetsDeg[target_idx,:]
+            self.cal_dot_o.draw()
+            self.cal_dot_i.pos = targetsDeg[target_idx,:]
+            self.cal_dot_i.draw()
+            self.psychopyWindow.flip()
+
+            # This flag will be set to true when a valid fixation has been acquired
+            gotFixLeft = 0  
+            gotFixRight = 0
+            
+            t0 = time.time() # reset fixation timer 
+        
+            # Loop until fixation data has been aquired for this dot (or timed out) 
+            while 1:
+                d = self.LiveTrack.GetBufferedEyePositions(0,fixDurSamples,0)
+
+                if self.trackEyes[0]:
+
+                    VectX = self.LiveTrack.GetFieldAsList(d,'VectX')
+                    VectY = self.LiveTrack.GetFieldAsList(d,'VectY')
+                    GlintX = self.LiveTrack.GetFieldAsList(d,'GlintX')
+                    GlintY = self.LiveTrack.GetFieldAsList(d,'GlintY')
+                    Tracked = self.LiveTrack.GetFieldAsList(d,'Tracked')
+
+                    # Calculate the maximum difference in the pupil-to-glint 
+                    # vectors for the samples in the buffer, for left eye
+                    pgDistL = max([max(VectX)-min(VectX),max(VectY)-min(VectY)])
+
+                    # Check if the maximum vector difference is within the defined
+                    # limit for a fixation (fixWindow) and all samples are tracked, and
+                    # the time to wait for fixations (waitTimeForFix) has passed, for
+                    # the left eye
+                    if pgDistL<=fixThreshold and np.all(Tracked) and (time.time()-t0)>setupDelay/1000:
+                        # Check if there are enough samples in the buffer for the
+                        # defined duration (fixDurSamples)
+                        if len(d)>=fixDurSamples and gotFixLeft==0:
+                            # save the data for this fixation
+                            VectXL[target_idx] = np.median(VectX)
+                            VectYL[target_idx] = np.median(VectY)
+                            GlintXL[target_idx] = np.median(GlintX)
+                            GlintYL[target_idx] = np.median(GlintY)
+                            print('Fixation #',str(target_idx+1),str(self.calibrationTargets[target_idx,:]),': Found valid fixation for left eye')
+                            gotFixLeft = 1 # good fixation aquired
+                
+                if self.trackEyes[1]:
+                    VectXRight = LiveTrack.GetFieldAsList(d,'VectXRight')
+                    VectYRight = LiveTrack.GetFieldAsList(d,'VectYRight')
+                    GlintXRight = LiveTrack.GetFieldAsList(d,'GlintXRight')
+                    GlintYRight = LiveTrack.GetFieldAsList(d,'GlintYRight')
+                    TrackedRight = LiveTrack.GetFieldAsList(d,'TrackedRight')
+                
+                    # and for the right eye
+                    pgDistR = max([max(VectXRight)-min(VectXRight),max(VectYRight)-min(VectYRight)])
+
+
+                    # and for the right eye
+                    if pgDistR<=fixThreshold and np.all(TrackedRight) and (time.time()-t0)>setupDelay/1000:
+                        # Check if there are enough samples in the buffer for the
+                        # defined duration (fixDurSamples)
+                        if  len(d)>=fixDurSamples and gotFixRight==0:
+                            # save the data for this fixation
+                            VectXR[target_idx] = np.median(VectXRight)
+                            VectYR[target_idx] = np.median(VectYRight)
+                            GlintXR[target_idx] = np.median(GlintXRight)
+                            GlintYR[target_idx] = np.median(GlintYRight)
+                            print('Fixation #',str(target_idx+1),str(self.calibrationTargets[target_idx,:]),': Found valid fixation for right eye')
+                            gotFixRight = 1 # good fixation aquired
+                
+
+                if (time.time()-t0)>fixTimeout:
+                    if not gotFixLeft and self.trackEyes[0]>0:
+                        print('Fixation #',str(target_idx+1),str(self.calibrationTargets[target_idx,:]),': Did not get fixation for left eye (timeout)')
+                    if not gotFixRight and self.trackEyes[1]>0:
+                        print('Fixation #',str(target_idx+1),str(self.calibrationTargets[target_idx,:]),': Did not get fixation for right eye (timeout)')
+                    break # fixation timed out
+
+                
+                # Exit if all eyes that are enabled have got a fixation
+                if (gotFixLeft or self.trackEyes[0]==False) and (gotFixRight or self.trackEyes[1]==False):
+                    self.psychopyWindow.flip()cfg['hw']['win']
+                    break
+
+        # Stop buffering data to the library
+        ######################################################### NOT SURE ABOUT THIS:
+
+        self.LiveTrack.StopTracking()
+
+        # Clear the data in the buffer
+        self.LiveTrack.ClearDataBuffer()
+
+
+        viewDist = self.psychopyWindow.monitor.getDistance()
+
+        # %% remove failed fixations from data
+
+        if self.trackEyes[0]:
+            # left eye
+            failedFixL = []
+            for i in range(0,len(VectXL)):
+                if VectXL[i] is None:
+                    failedFixL.append(i)
+            
+            # %% remove failed fixations from data
+            VectXL = np.delete(VectXL, failedFixL).tolist()cfg['hw']['win']
+            VectYL = np.delete(VectYL, failedFixL).tolist()
+            GlintXL = np.delete(GlintXL, failedFixL).tolist()
+            GlintYL = np.delete(GlintYL, failedFixL).tolist()
+            tgtLocsXL = np.delete(tgtLocs[:,0], failedFixL).tolist()
+            tgtLocsYL = np.delete(tgtLocs[:,1], failedFixL).tolist()
+
+            # %% send fixation data to LiveTrack to calibrate
+            calErrL = self.LiveTrack.CalibrateDevice(0, len(tgtLocsXL), tgtLocsXL, tgtLocsYL, VectXL, VectYL, viewDist, np.median(GlintXL), np.median(GlintYL))
+            print('Left eye calibration accuraccy: ',str(math.sqrt(float(calErrL)/len(tgtLocsXL))), 'errors in dva')
+
+
+        if self.trackEyes[1]:
+            # right eye
+            failedFixR = []
+            for i in range(0,len(VectXR)):
+                if VectXR[i] is None:
+                    failedFixR.append(i)
+
+            # %% remove failed fixations from data
+            VectXR = np.delete(VectXR, failedFixR).tolist()
+            VectYR = np.delete(VectYR, failedFixR).tolist()
+            GlintXR = np.delete(GlintXR, failedFixR).tolist()
+            GlintYR = np.delete(GlintYR, failedFixR).tolist()
+            tgtLocsXR = np.delete(tgtLocs[:,0], failedFixR).tolist()
+            tgtLocsYR = np.delete(tgtLocs[:,1], failedFixR).tolist()
+            
+            calErrR = self.LiveTrack.CalibrateDevice(1, len(tgtLocsXR), tgtLocsXR, tgtLocsYR, VectXR, VectYR, viewDist, np.median(GlintXR), np.median(GlintYR))
+            print('Left eye calibration accuraccy: ',str(math.sqrt(float(calErrR)/len(tgtLocsXR))), 'errors in dva')
+        
+
+        # %% plot the estimated fixation locations for the calibration
+        #if trackLeftEye:
+        #    [gazeXL, gazeYL] = LiveTrack.CalcGaze(0, len(tgtLocsXL), VectXL, VectYL)
+        #
+        #if trackRightEye:
+        #    [gazeXR, gazeYR] = LiveTrack.CalcGaze(1, len(tgtLocsXR), VectXR, VectYR)
+        # errors are added?
+        # gazeXL = [x+10 for x in tgtLocsXL]
+        # gazeYL = [x+10 for x in tgtLocsYL]
+        # gazeXR = [x-10 for x in tgtLocsXR]
+        # gazeYR = [x-10 for x in tgtLocsYR]
+        
+        # if useVideo:
+        #     self.LiveTrackGS.VideoStop()
+
+
+        self.LiveTrack.SetResultsTypeCalibrated()
+
+    def __DM_calibrate(self):
+        print('calibrate dummy mouse')
+
+    
+
+
+
+    # endregion
+
 
 
     # the following functions should be different for each device:
@@ -153,7 +379,6 @@ class EyeTracker:
 
 
     # at the start:    
-    # def calibrate(self):
     # def savecalibration(self):
 
     # # during trials:
