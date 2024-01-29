@@ -47,8 +47,16 @@ class EyeTracker:
 
 
 
-        
-import numpy as nplivetrack device here
+    def setEyetracker(self, tracker):
+        if isinstance(tracker, str):
+            if tracker in ['eyelink', 'livetrack', 'mouse']:
+
+                if tracker == 'eyelink':
+                    # set up the eyelink device here
+                    self.setupEyeLink()
+
+                if tracker == 'livetrack':
+                    # set up the livetrack device here
                     self.setupLiveTrack()
 
                 if tracker == 'mouse':
@@ -84,7 +92,7 @@ import numpy as nplivetrack device here
 
     def setPsychopyWindow(self, psychopyWindow):
         if isinstance(psychopyWindow, psychopy.visual.window.Window):
-            self.win = psychopyWindow
+            self.psychopyWindow = psychopyWindow
         else:
             raise Warning("psychopyWindow must by a psychopy Window")
 
@@ -104,6 +112,7 @@ import numpy as nplivetrack device here
 
         # remap functions:
         self.initialize = self.__LT_initialize
+        self.calibrate  = self.__LT_calibrate
         # ...
         # here we map other functions
         # ...
@@ -115,6 +124,7 @@ import numpy as nplivetrack device here
 
         # remap functions:
         self.initialize = self.__DM_initialize
+        self.calibrate  = self.__DM_calibrate
         # ...
         # here we map other functions
         # ...
@@ -173,7 +183,7 @@ import numpy as nplivetrack device here
         fixThreshold = 5 # pixel window for all samples within a 'fixation'
 
         ntargets = np.shape(self.calibrationTargets)[0]
-        tgtLocs = targetsDeg.astype(float) # make sure locations are floats
+        tgtLocs = self.calibrationTargets.astype(float) # make sure locations are floats
 
         # show calibration on separate video window (not necessary):
         # if self.useVideo:
@@ -194,12 +204,12 @@ import numpy as nplivetrack device here
         self.LiveTrack.SetTracking(self.trackEyes[0], self.trackEyes[1]) # make sure we're only tracking the requires eyes
         # print(self.LiveTrack.GetTracking()) # see what's being tracked
 
-        if trackEye[0]:
+        if self.trackEyes[0]:
             VectXL = [None] * ntargets
             VectYL = [None] * ntargets
             GlintXL = [None] * ntargets
             GlintYL = [None] * ntargets
-        if trackEyes[1]:
+        if self.trackEyes[1]:
             VectXR = [None] * ntargets
             VectYR = [None] * ntargets
             GlintXR = [None] * ntargets
@@ -211,9 +221,9 @@ import numpy as nplivetrack device here
 
         for target_idx in range(ntargets):
             # plot a circle at the fixation position.
-            self.cal_dot_o.pos = targetsDeg[target_idx,:]
+            self.cal_dot_o.pos = self.calibrationTargets[target_idx,:]
             self.cal_dot_o.draw()
-            self.cal_dot_i.pos = targetsDeg[target_idx,:]
+            self.cal_dot_i.pos = self.calibrationTargets[target_idx,:]
             self.cal_dot_i.draw()
             self.psychopyWindow.flip()
 
@@ -256,11 +266,11 @@ import numpy as nplivetrack device here
                             gotFixLeft = 1 # good fixation aquired
                 
                 if self.trackEyes[1]:
-                    VectXRight = LiveTrack.GetFieldAsList(d,'VectXRight')
-                    VectYRight = LiveTrack.GetFieldAsList(d,'VectYRight')
-                    GlintXRight = LiveTrack.GetFieldAsList(d,'GlintXRight')
-                    GlintYRight = LiveTrack.GetFieldAsList(d,'GlintYRight')
-                    TrackedRight = LiveTrack.GetFieldAsList(d,'TrackedRight')
+                    VectXRight = self.LiveTrack.GetFieldAsList(d,'VectXRight')
+                    VectYRight = self.LiveTrack.GetFieldAsList(d,'VectYRight')
+                    GlintXRight = self.LiveTrack.GetFieldAsList(d,'GlintXRight')
+                    GlintYRight = self.LiveTrack.GetFieldAsList(d,'GlintYRight')
+                    TrackedRight = self.LiveTrack.GetFieldAsList(d,'TrackedRight')
                 
                     # and for the right eye
                     pgDistR = max([max(VectXRight)-min(VectXRight),max(VectYRight)-min(VectYRight)])
@@ -290,7 +300,7 @@ import numpy as nplivetrack device here
                 
                 # Exit if all eyes that are enabled have got a fixation
                 if (gotFixLeft or self.trackEyes[0]==False) and (gotFixRight or self.trackEyes[1]==False):
-                    self.psychopyWindow.flip()cfg['hw']['win']
+                    self.psychopyWindow.flip()
                     break
 
         # Stop buffering data to the library
@@ -314,7 +324,7 @@ import numpy as nplivetrack device here
                     failedFixL.append(i)
             
             # %% remove failed fixations from data
-            VectXL = np.delete(VectXL, failedFixL).tolist()cfg['hw']['win']
+            VectXL = np.delete(VectXL, failedFixL).tolist()
             VectYL = np.delete(VectYL, failedFixL).tolist()
             GlintXL = np.delete(GlintXL, failedFixL).tolist()
             GlintYL = np.delete(GlintYL, failedFixL).tolist()
@@ -364,7 +374,8 @@ import numpy as nplivetrack device here
         self.LiveTrack.SetResultsTypeCalibrated()
 
     def __DM_calibrate(self):
-        print('calibrate dummy mouse')
+        print('dummy mouse calibration')
+        print('(does nothing)')
 
     
 
