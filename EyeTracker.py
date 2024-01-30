@@ -97,8 +97,20 @@ class EyeTracker:
             raise Warning("psychopyWindow must by a psychopy Window")
 
     def setupEyeLink(self):
+        
+        # python library to interface with EyeLink:
         import pylink
         self.pylink = pylink
+
+        # psychopy iohub stuff to make things a bit easier:
+        from psychopy.iohub.client import launchHubServer
+        self.launchHubServer = launchHubServer
+        from psychopy.iohub.util import hideWindow, showWindow
+        self.hideWindow = hideWindow
+        self.showWindow = showWindow
+
+
+
 
         # remap functions:
         self.initialize = self.__EL_initialize
@@ -138,6 +150,20 @@ class EyeTracker:
 
     def __EL_initialize(self):
         print('initialize EyeLink')
+
+        # set up configuration for our particular EyeLink
+        self.devices_config = dict()
+        eyetracker_config = dict(name='tracker')
+        eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
+        eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='RIGHT')
+        eyetracker_config['calibration'] = dict(screen_background_color=(0,0,0))
+        self.devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
+
+        # launch a tracker device thing in the iohub:
+        self.io = self.launchHubServer(window = self.psychopyWindow, **devices_config)
+        self.tracker = self.io.getDevice('tracker')
+
+
 
     def __LT_initialize(self):
         print('initialize LiveTrack')
