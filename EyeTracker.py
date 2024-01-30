@@ -73,7 +73,10 @@ class EyeTracker:
         if isinstance(trackEyes, list):
             if len(trackEyes) == 2:
                 if all([isinstance(x, bool) for x in trackEyes]):
-                    self.trackEyes = trackEyes
+                    if any(trackEyes):
+                        self.trackEyes = trackEyes
+                    else:
+                        raise Warning("one or both eyes must be tracked")
                 else:
                     raise Warning("trackEyes must be a list of booleans")
             else:
@@ -151,11 +154,25 @@ class EyeTracker:
     def __EL_initialize(self):
         print('initialize EyeLink')
 
+        track_eyes = None
+
+        if all(trackEyes):
+            track_eyes = 'BOTH'
+        else:
+            if trackEyes[0]:
+                track_eyes = 'LEFT_EYE'  # or just 'LEFT' ?
+            if trackEyes[1]:
+                track_eyes = 'RIGHT_EYE'  # or just 'RIGHT' ?
+
+        if track_eyes == None:
+            raise Warning("trackEyes needs to set at least one eye to be tracked")
+        
+
         # set up configuration for our particular EyeLink
         self.devices_config = dict()
         eyetracker_config = dict(name='tracker')
         eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
-        eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='RIGHT')
+        eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
         eyetracker_config['calibration'] = dict(screen_background_color=(0,0,0))
         self.devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
 
