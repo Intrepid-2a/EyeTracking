@@ -119,6 +119,10 @@ class EyeTracker:
         self.initialize = self.__EL_initialize
         # self.calibrate  = self.__EL_calibrate
 
+        self.lastsample = self.__EL_lastsample
+
+        self.startcollecting = self.__EL_startcollecting
+        self.stopcollecting = self.__EL_stopcollecting
 
         self.comment = self.__EL_comment
         self.shutdown = self.__EL_shutdown
@@ -133,6 +137,8 @@ class EyeTracker:
         # remap functions:
         self.initialize = self.__LT_initialize
         self.calibrate  = self.__LT_calibrate
+
+        self.lastsample = self.__LT_lastsample
 
         self.startcollecting = self.__LT_startcollecting
         self.stopcollecting = self.__LT_stopcollecting
@@ -152,8 +158,10 @@ class EyeTracker:
         self.initialize = self.__DM_initialize
         self.calibrate  = self.__DM_calibrate
 
-    
-        
+        self.lastsample = self.__DM_lastsample
+
+        self.startcollecting = self.__DM_startcollecting
+        self.stopcollecting = self.__DM_stopcollecting
 
         self.comment = self.__DM_comment
         self.shutdown = self.__DM_shutdown
@@ -219,11 +227,11 @@ class EyeTracker:
         # LTcal(cfg=cfg, trackLeftEye=trackLeftEye, trackRightEye=trackRightEye)
 
     def __DM_initialize(self):
-        print('initialize dummy mouse')
-        self.mouse = event.Mouse( visible = True,
-                                  newPos = None,
-                                  win = self.win )
-        print(self.__np.sqrt(2))
+        print('initialize dummy mouse tracker')
+        self.__mousetracker = event.Mouse( visible = True,
+                                           newPos = None,
+                                           win = self.psychopyWindow )
+        
 
     # endregion
 
@@ -512,13 +520,20 @@ class EyeTracker:
 
     def __EL_lastsample(self):
         print('not implemented: getting last eyelink sample')
+        # probably needs to be converted to dva... using built-in psychopy functions
         
 
     def __LT_lastsample(self):
         print('not implemented: getting last livetrack sample')
+        data = self.LiveTrack.GetLastResult()
+        # this needs to be formatted in some standard way that is the same for all eye-tracker devices
 
     def __DM_lastsample(self):
         print('not implemented: getting last dummy mouse sample')
+        data = self.__mousetracker.getPos()
+        # this needs to be formatted in some standard way that is the same for all eye-tracker devices
+        # copied to each eye?
+
 
     # endregion
 
