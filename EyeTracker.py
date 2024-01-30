@@ -117,6 +117,11 @@ class EyeTracker:
 
         # remap functions:
         self.initialize = self.__EL_initialize
+        # self.calibrate  = self.__EL_calibrate
+
+
+        self.comment = self.__EL_comment
+        self.shutdown = self.__EL_shutdown
         # ...
         # here we map other functions
         # ...
@@ -128,6 +133,12 @@ class EyeTracker:
         # remap functions:
         self.initialize = self.__LT_initialize
         self.calibrate  = self.__LT_calibrate
+
+        self.startcollecting = self.__LT_startcollecting
+        self.stopcollecting = self.__LT_stopcollecting
+
+        self.comment = self.__LT_comment
+        self.shutdown = self.__LT_shutdown
         # ...
         # here we map other functions
         # ...
@@ -140,6 +151,12 @@ class EyeTracker:
         # remap functions:
         self.initialize = self.__DM_initialize
         self.calibrate  = self.__DM_calibrate
+
+    
+        
+
+        self.comment = self.__DM_comment
+        self.shutdown = self.__DM_shutdown
         # ...
         # here we map other functions
         # ...
@@ -426,32 +443,145 @@ class EyeTracker:
         print('(does nothing)')
 
     
+    # endregion
 
+    # functions to save calibration
+    # region
+
+    def savecalibration(self):
+        raise Warning("default function: tracker not set")
+
+    def __EL_savecalibration(self):
+        print('can we even save the EyeLink calibration?')
+
+    def __LT_savecalibration(self):
+        print('this needs a filename, probably... not sure where that would come from')
+
+    def __DM_savecalibration(self):
+        print('not saving mouse calibration, it is 1:1')
+
+    
+    # endregion
+
+
+    # function to start collecting raw data
+    # region
+    def startcollecting(self):
+        raise Warning("default function: tracker not set")
+
+    def __EL_startcollecting(self):
+        print('not implemented: startcollecting EyeLink')
+
+    def __LT_startcollecting(self):
+        print('not implemented: startcollecting LiveTrack')
+
+    def __DM_startcollecting(self):
+        print('not implemented: startcollecting dummy mouse')
+
+    # endregion
+
+
+    # function to stop collecting raw data
+    # region
+
+    def stopcollecting(self):
+        raise Warning("default function: tracker not set")
+
+    def __EL_stopcollecting(self):
+        print('not implemented: stopcollecting EyeLink')
+
+    def __LT_stopcollecting(self):
+        print('not implemented: stopcollecting LiveTrack')
+
+    def __DM_stopcollecting(self):
+        print('not implemented: stopcollecting dummy mouse')
 
 
     # endregion
 
 
 
-    # the following functions should be different for each device:
+
+    # the following functions are used during the experiment:
+
+    # get the last sample from the specified tracker:
+    # region
+
+    def lastsample(self):
+        raise Warning("default function: tracker not set")
+
+    def __EL_lastsample(self):
+        print('not implemented: getting last eyelink sample')
+        
+
+    def __LT_lastsample(self):
+        print('not implemented: getting last livetrack sample')
+
+    def __DM_lastsample(self):
+        print('not implemented: getting last dummy mouse sample')
+
+    # endregion
+
+
+    # insert a comment into the raw data file storing tracker data:
+    # region
+    def comment(self, comment):
+        raise Warning("default function: tracker not set")
+
+    def __EL_comment(self, comment):
+        print('not implemented: storing a comment in the raw eyelink data file')
+        # check if there is a current file where data is actively being recorded
+        # format as a message that the EyeLink can handle?
+        # - replace spaces with underscores?
+        # - maximum length?
+
+    def __LT_comment(self, comment):
+        print('not implemented: storing a comment in the raw livetrack data file')
+        # check if there is a current file where data is actively being recorded
+
+    def __DM_comment(self, comment):
+        print('not implemented: storing a comment in the raw dummy mouse data file')
+        # also: probably won't be implemented, because there is no such file?
+        # this would require starting a different thread or so, that takes all the mouse coordinates and... no doesn't sound like a plan to me
+
+
+    # endregion
 
 
 
-    # at the start:    
-    # def savecalibration(self):
 
-    # # during trials:
-    # def lastsample(self):
-    # def testfixation(self):
-    # def comment(self):
 
-    # # for breaks, and to switch to new files
-    # # IIRC on the EyeLink you need to download files when you stopcollecting()?
+    # functions to close the eye-tracker
+    # region
 
-    # def startcollecting(self):
-    # def stopcollecting(self):
+    def shutdown(self):
+        raise Warning("default function: tracker not set")
 
-    # # at the end of the experiment:
-    # def shutdown(self):
+    def __EL_shutdown(self):
+        print('not implemented yet: EyeLink shutdown')
 
-    
+    def __LT_shutdown(self):
+        print('not implemented yet: LiveTrack shutdown')
+
+    def __DM_shutdown(self):
+        print('not implemented yet: dummy mouse shutdown')
+
+    # endregion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
