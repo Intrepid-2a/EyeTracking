@@ -156,25 +156,30 @@ class EyeTracker:
 
         track_eyes = None
 
-        if all(trackEyes):
+        if all(self.trackEyes):
             track_eyes = 'BOTH'
         else:
-            if trackEyes[0]:
+            # only one eye is tracked?
+            if self.trackEyes[0]:
                 track_eyes = 'LEFT_EYE'  # or just 'LEFT' ?
-            if trackEyes[1]:
+            if self.trackEyes[1]:
                 track_eyes = 'RIGHT_EYE'  # or just 'RIGHT' ?
 
+        # if no eye is tracked, that is going to be really hard for calibration and getting any samples...
         if track_eyes == None:
             raise Warning("trackEyes needs to set at least one eye to be tracked")
         
 
         # set up configuration for our particular EyeLink
-        self.devices_config = dict()
+        devices_config = dict()
         eyetracker_config = dict(name='tracker')
         eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
         eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
         eyetracker_config['calibration'] = dict(screen_background_color=(0,0,0))
-        self.devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
+        devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
+
+        # not sure this needs to be stored, but let's just have the info available in the future:
+        self.devices_config = devices_config
 
         # launch a tracker device thing in the iohub:
         self.io = self.launchHubServer(window = self.psychopyWindow, **devices_config)
