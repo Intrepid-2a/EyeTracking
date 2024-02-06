@@ -46,8 +46,12 @@ class EyeTracker:
         # the innner and outer calibration dot size can be changed later on, but the stimuli will have already been made...
         self.fixDotInDeg  = 0.2 # inner circle
         self.fixDotOutDeg = 1.0
-        self.cal_dot_o = visual.Circle(self.psychopyWindow,units='deg',radius=self.fixDotOutDeg/2,fillColor=[-1,-1,-1],lineWidth=0,pos=[0,0]) # outer circle
-        self.cal_dot_i = visual.Circle(self.psychopyWindow,units='deg',radius=self.fixDotInDeg/2,fillColor=[ 1, 1, 1],lineWidth=0,pos=[0,0]) # inner circle
+
+        self.N_calibrations = 0
+        self.N_rawdatafiles = 0
+
+        self.setTargetStim()
+
 
 
 
@@ -385,10 +389,14 @@ class EyeTracker:
 
         for target_idx in range(ntargets):
             # plot a circle at the fixation position.
-            self.cal_dot_o.pos = self.calibrationTargets[target_idx,:]
-            self.cal_dot_o.draw()
-            self.cal_dot_i.pos = self.calibrationTargets[target_idx,:]
-            self.cal_dot_i.draw()
+            # self.cal_dot_o.pos = self.calibrationTargets[target_idx,:]
+            # self.cal_dot_o.draw()
+            # self.cal_dot_i.pos = self.calibrationTargets[target_idx,:]
+            # self.cal_dot_i.draw()
+
+            self.target.pos = self.calibrationTargets[target_idx,:]
+            self.target.draw()
+
             self.psychopyWindow.flip()
 
             # This flag will be set to true when a valid fixation has been acquired
@@ -537,14 +545,12 @@ class EyeTracker:
 
         self.LiveTrack.SetResultsTypeCalibrated()
 
+        self.N_calibrations += 1
+        self.savecalibration()
+
     def __DM_calibrate(self):
         print('dummy mouse calibration')
-        print('(does nothing)')
-
-    
-    # endregion
-
-    # functions to save calibration
+        print('(does nothing)')os.path.isdir()
     # region
 
     def savecalibration(self):
@@ -554,7 +560,21 @@ class EyeTracker:
         print('can we even save the EyeLink calibration?')
 
     def __LT_savecalibration(self):
-        print('this needs a filename, probably... not sure where that would come from')
+
+        # collect calibration info in a dictionary:
+        calibrations = {}
+        if self.trackEyes[0]:
+            calibrations['left']  = self.LiveTrack.GetCalibration(eye=0)
+        if self.trackEyes[1]:
+            calibrations['right'] = self.LiveTrack.GetCalibration(eye=1)
+
+        # write calibration info to a json file:
+        filename = '%s/calibration_%s.json'%(self.filefolder, self.N_calibrations)
+        out_file = open(filename, "w")
+        json.dump( calibrations,
+                   fp=out_file,
+                   indent=4)
+        out_file.close()
 
     def __DM_savecalibration(self):
         print('not saving mouse calibration, it is 1:1')
@@ -675,13 +695,9 @@ class EyeTracker:
     # endregion
 
 
+    def setTargetStim(self):
 
-
-
-
-
-
-
+        self.target = visual.TargetStim(self.psychopyWindow, radius=self.fixDotOutDeg/2, innerRadius=self.fixDotInDeg/2, fillColor=[-1,-1,-1], innerFillColor=[1,1,1], lineWidth=0, innerLineWidth=0, borderColor=None, innerBorderColor=None)
 
 
 
