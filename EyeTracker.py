@@ -109,12 +109,13 @@ class EyeTracker:
         self.EyeLinkCoreGraphicsPsychoPy = EyeLinkCoreGraphicsPsychoPy
 
 
-        # # psychopy iohub stuff to make things a bit harder:
-        # from psychopy.iohub.client import launchHubServer
-        # self.launchHubServer = launchHubServer
-        # from psychopy.iohub.util import hideWindow, showWindow
-        # self.hideWindow = hideWindow
-        # self.showWindow = showWindow
+        # psychopy iohub stuff to make things a bit harder:
+        from psychopy.iohub.client import launchHubServer
+        self.launchHubServer = launchHubServer
+        from psychopy.iohub.util import hideWindow, showWindow
+        self.hideWindow = hideWindow
+        self.showWindow = showWindow
+        # does this showwindow/hidewindow stuff need to be applied/bound to an extra window?
 
 
 
@@ -181,14 +182,69 @@ class EyeTracker:
         raise Warning("set a tracker before initializing it")
 
     def __EL_initialize(self):
-        print('initialize EyeLink')
+        # print('initialize EyeLink')
 
-        # new code for pylink:
-        self.EL = pylink.EyeLink('100.1.1.1')
+        # # new code for pylink:
+        # self.EL = pylink.EyeLink('100.1.1.1')
 
-        # this is only for the data viewer:
-        message = 'DISPLAY_COORDS 0 0 %d %d'%(self.psychopyWindow.size[0]-1,self.psychopyWindow.size[1]-1) # unless we use a retina display on a mac?
-        self.EL.sendMessage(message)
+        # # this is only for the data viewer:
+        # message = 'DISPLAY_COORDS 0 0 %d %d'%(self.psychopyWindow.size[0]-1,self.psychopyWindow.size[1]-1) # unless we use a retina display on a mac?
+        # self.EL.sendMessage(message)
+
+        
+        # # set to offline mode
+        # self.EL.setOfflineMode()
+
+        # # Get the software version:  1-EyeLink I, 2-EyeLink II, 3/4-EyeLink 1000,
+        # # 5-EyeLink 1000 Plus, 6-Portable DUO
+        # eyelink_ver = 0  # set version to 0, in case running in Dummy mode
+        # if not dummy_mode:
+        #     vstr = self.EL.getTrackerVersionString()
+        #     eyelink_ver = int(vstr.split()[-1].split('.')[0])
+        #     # print out some version info in the shell
+        #     print('Running experiment on %s, version %d' % (vstr, eyelink_ver))
+
+        # # File and Link data control
+        # # what eye events to save in the EDF file, include everything by default
+        # file_event_flags = '%sFIXATION,SACCADE,BLINK,MESSAGE,BUTTON,INPUT'%(track_eyes)
+        # # what eye events to make available over the link, include everything by default
+        # link_event_flags = '%sFIXATION,SACCADE,BLINK,BUTTON,FIXUPDATE,INPUT'%(track_eyes)
+        # # what sample data to save in the EDF data file and to make available
+        # # over the link, include the 'HTARGET' flag to save head target sticker
+        # # data for supported eye trackers
+        # if eyelink_ver > 3:
+        #     file_sample_flags = '%sGAZE,HREF,RAW,AREA,HTARGET,GAZERES,BUTTON,STATUS,INPUT'%(track_eyes)
+        #     link_sample_flags = '%sGAZE,GAZERES,AREA,HTARGET,STATUS,INPUT'%(track_eyes)
+        # else:
+        #     file_sample_flags = '%sGAZE,HREF,RAW,AREA,GAZERES,BUTTON,STATUS,INPUT'%(track_eyes)
+        #     link_sample_flags = '%sGAZE,GAZERES,AREA,STATUS,INPUT'%(track_eyes)
+        # self.EL.sendCommand("file_event_filter = %s" % file_event_flags)
+        # self.EL.sendCommand("file_sample_data = %s" % file_sample_flags)
+        # self.EL.sendCommand("link_event_filter = %s" % link_event_flags)
+        # self.EL.sendCommand("link_sample_data = %s" % link_sample_flags)
+
+
+        # # we'll calibrate with a 9-point calibration:
+        # self.EL.sendCommand("calibration_type = HV9")
+
+        # # make the psychopy graphics environment available for calibrations:
+        # self.genv = EyeLinkCoreGraphicsPsychoPy(self.EL, self.psychopyWindow)
+        # print(self.genv)  # print out the version number of the CoreGraphics library
+
+        # # Set background and foreground colors for the calibration target
+        # # in PsychoPy, (-1, -1, -1)=black, (1, 1, 1)=white, (0, 0, 0)=mid-gray
+        # foreground_color = (-1, -1, -1)
+        # background_color = self.psychopyWindow.color
+        # self.genv.setCalibrationColors(foreground_color, background_color)
+
+        # # no calibration sounds please:
+        # self.genv.setCalibrationSounds('off', 'off', 'off')
+
+        # # tell pylink to use the graphics environment:
+        # self.pylink.openGraphicsEx(self.genv)
+
+
+        # old code for iohub:
 
         # tell the eyelink which eyes to track
         # we'll store and make available the same eyes (this could be set up differently)
@@ -204,75 +260,22 @@ class EyeTracker:
         # if no eye is tracked, that is going to be really hard for calibration and getting any samples...
         if track_eyes == None:
             raise Warning("trackEyes needs to set at least one eye to be tracked")
-        
-        # set to offline mode
-        self.EL.setOfflineMode()
-
-        # Get the software version:  1-EyeLink I, 2-EyeLink II, 3/4-EyeLink 1000,
-        # 5-EyeLink 1000 Plus, 6-Portable DUO
-        eyelink_ver = 0  # set version to 0, in case running in Dummy mode
-        if not dummy_mode:
-            vstr = self.EL.getTrackerVersionString()
-            eyelink_ver = int(vstr.split()[-1].split('.')[0])
-            # print out some version info in the shell
-            print('Running experiment on %s, version %d' % (vstr, eyelink_ver))
-
-        # File and Link data control
-        # what eye events to save in the EDF file, include everything by default
-        file_event_flags = '%sFIXATION,SACCADE,BLINK,MESSAGE,BUTTON,INPUT'%(track_eyes)
-        # what eye events to make available over the link, include everything by default
-        link_event_flags = '%sFIXATION,SACCADE,BLINK,BUTTON,FIXUPDATE,INPUT'%(track_eyes)
-        # what sample data to save in the EDF data file and to make available
-        # over the link, include the 'HTARGET' flag to save head target sticker
-        # data for supported eye trackers
-        if eyelink_ver > 3:
-            file_sample_flags = '%sGAZE,HREF,RAW,AREA,HTARGET,GAZERES,BUTTON,STATUS,INPUT'%(track_eyes)
-            link_sample_flags = '%sGAZE,GAZERES,AREA,HTARGET,STATUS,INPUT'%(track_eyes)
-        else:
-            file_sample_flags = '%sGAZE,HREF,RAW,AREA,GAZERES,BUTTON,STATUS,INPUT'%(track_eyes)
-            link_sample_flags = '%sGAZE,GAZERES,AREA,STATUS,INPUT'%(track_eyes)
-        self.EL.sendCommand("file_event_filter = %s" % file_event_flags)
-        self.EL.sendCommand("file_sample_data = %s" % file_sample_flags)
-        self.EL.sendCommand("link_event_filter = %s" % link_event_flags)
-        self.EL.sendCommand("link_sample_data = %s" % link_sample_flags)
 
 
-        # we'll calibrate with a 9-point calibration:
-        self.EL.sendCommand("calibration_type = HV9")
+        # set up configuration for our particular EyeLink
+        devices_config = dict()
+        eyetracker_config = dict(name='tracker')
+        eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
+        eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
+        eyetracker_config['calibration'] = dict(screen_background_color=(0,0,0))
+        devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
 
-        # make the psychopy graphics environment available for calibrations:
-        self.genv = EyeLinkCoreGraphicsPsychoPy(self.EL, self.psychopyWindow)
-        print(self.genv)  # print out the version number of the CoreGraphics library
+        # not sure this needs to be stored, but let's just have the info available in the future:
+        self.devices_config = devices_config
 
-        # Set background and foreground colors for the calibration target
-        # in PsychoPy, (-1, -1, -1)=black, (1, 1, 1)=white, (0, 0, 0)=mid-gray
-        foreground_color = (-1, -1, -1)
-        background_color = self.psychopyWindow.color
-        self.genv.setCalibrationColors(foreground_color, background_color)
-
-        # no calibration sounds please:
-        self.genv.setCalibrationSounds('off', 'off', 'off')
-
-        # tell pylink to use the graphics environment:
-        self.pylink.openGraphicsEx(self.genv)
-
-
-        # old code for iohub:
-
-        # # set up configuration for our particular EyeLink
-        # devices_config = dict()
-        # eyetracker_config = dict(name='tracker')
-        # eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
-        # eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
-        # eyetracker_config['calibration'] = dict(screen_background_color=(0,0,0))
-        # devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
-
-        # # not sure this needs to be stored, but let's just have the info available in the future:
-        # self.devices_config = devices_config
-
-        # # launch a tracker device thing in the iohub:
-        # self.io = self.launchHubServer(window = self.psychopyWindow, **devices_config)
-        # self.tracker = self.io.getDevice('tracker')
+        # launch a tracker device thing in the iohub:
+        self.io = self.launchHubServer(window = self.psychopyWindow, **devices_config)
+        self.tracker = self.io.getDevice('tracker')
 
 
 
@@ -307,7 +310,7 @@ class EyeTracker:
         raise Warning("set eyetracker before calibrating it")
 
     def __EL_calibrate(self):
-        print('calibrate EyeLink')
+        print('calibrate EyeLink: not implemented')
 
     def __LT_calibrate(self):
         print('calibrate livetrack')
