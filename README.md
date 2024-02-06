@@ -10,10 +10,22 @@ The object will have a few properties:
 It needs to be associated with a PsychoPy window as well.
 
 These properties can be set when initializing the object, but there should be methods to change them as well:
-- setEyetracker()
-- trackEyes()
-- setFixationWindow()
-- setPsychopyWindow()
+
+`setEyetracker()`
+**arguments:**
+- tracker: _string_: ['eyelink', 'livetrack', 'mouse']
+
+`trackEyes()`
+**arguments:**
+- trackEyes: _list of 2 booleans_: left and right eye
+
+`setFixationWindow()`
+**arguments:**
+- fixationWindow: _number_ (float, int, ...) setting the maximum deviation from the fixation point in the units of the psychopy window
+
+`setPsychopyWindow()`
+**arguments:**
+- psychopyWindow: _psychopy window object_ assumes that the psychopy window has the unit set to degrees
 
 [implemented so far]
 
@@ -21,22 +33,27 @@ And it should have a few methods to do things.
 
 At the start that would be:
 
-- initialize()
-- calibrate()
-- savecalibration()
+`initialize()`
+
+`calibrate()`
+
+`savecalibration()`
 
 While running the experiment, on a frame-by-frame basis:
 
-- lastsample()
-- testfixation()
-- comment()
+`lastsample()`
+
+`testfixation()`
+
+`comment()`
 
 For data storage:
 
-- startcollecting()
-- stopcollecting()
+`startcollecting()`
+
+`stopcollecting()`
 
 Possibly at the end of the experiment, not sure though:
 
-- shutdown()
+`shutdown()`
 
