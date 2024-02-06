@@ -81,93 +81,119 @@ Nothing... but, perhaps this should be in a try/catch block (or several of them)
 
 ---
 
-[not fully implemented from here on]
+[below this line: not fully implemented yet]
 
-`calibrate()`
+### `calibrate()`
+
 **arguments:**
+
 None
 
 **returns:**
+
 Nothing?
 
+> This function does the actual calibration of the eye-tracker (except for the dummy mouse tracker).
 
-This function does the actual calibration of the eye-tracker (except for the dummy mouse tracker).
+### `savecalibration()`
 
-`savecalibration()`
 **arguments:**
+
 None
 
 **returns:**
+
 Nothing... but/and:
 
-This function is useless for the EyeLink, so perhaps it should be combined with the LiveTrack version of doing the calibration, and be an internal function only.
+> This function is useless for the EyeLink, so perhaps it should be combined with the LiveTrack version of doing the calibration, and be an internal function only.
 
 ## Running the experiment:
 
 While running the experiment, on a frame-by-frame basis:
 
-`startfixation()`
+### `startfixation()`
+
 **arguments:**
+
 - fixationPoint: _tuple of numbers:_ [X,Y] coordinates of the desired fixation in the units of the psychopy window (0)
 - duration: _number:_ (float or int) duration (in seconds) that the fixation point is fixated, on each consecutive frame in that period
 - timeout: _number:_ (float or int) if the fixation point is not fixated for this amount of time, the procedure times out with
 
 **returns:**
+
 - _boolean:_ True: participant fixated the point, False: participant did not fixate the point
 
-This waits for participants to fixate
+> This waits for participants to fixate
 
-`lastsample()`
+### `lastsample()`
+
 **arguments:**
+
 None
 
 **returns:**
+
 A dictionary with the last gaze sample, in the format ... (defined somewhere else)
 
-`driftFixation()`
+### `driftFixation()`
+
 **arguments:**
+
 None
 
-This function stores an eye-tracker offset to apply to samples to return to the experiment. It is a form of online drift correction, that allows for some head movement without having to do a new calibration. This will only give (somewhat) accurate gaze samples at the fixation point used. Therefore, this should only be used for experiment that require fixating some point, not for experiments that where tracking more free eye-movements is important.
+> This function stores an eye-tracker offset to apply to samples to return to the experiment. It is a form of online drift correction, that allows for some head movement without having to do a new calibration. This will only give (somewhat) accurate gaze samples at the fixation point used. Therefore, this should only be used for experiment that require fixating some point, not for experiments that where tracking more free eye-movements is important.
 
 **returns:**
+
 Nothing
 
-`comment()`
+### `comment()`
+
 **arguments:**
-- message: _string_ The message to be stored in the raw data file. This is primarily useful for segmenting raw eye-tracking data, so we can cut out trials, and events withing trials (stimulus onset / offset, and so on).
+
+- message: _string_ The message to be stored in the raw data file, right now / as soon as possible. This is primarily useful for segmenting raw eye-tracking data, so we can cut out trials, and events withing trials (stimulus onset / offset, and so on).
 
 **returns:**
+
 Nothing
 
 ## Raw data storage:
 
-`startcollecting()`
+### `startcollecting()`
+
 **arguments:**
+
 None
 
 **returns:**
+
 Nothing
 
-This function makes a new raw data file (just enumerate them?) for storing raw eye-tracker data.
+> This function makes a new raw data file (just enumerate them?) for storing raw eye-tracker data.
 
-`stopcollecting()`
+### `stopcollecting()`
+
 **arguments:**
+
 None
 
 **returns:**
+
 Nothing
 
-This function makes a new raw data file (just enumerate them?) for storing raw eye-tracker data.
+> This function makes a new raw data file (just enumerate them?) for storing raw eye-tracker data.
 
 
 ## Closing the object
 
-`shutdown()`
+### `shutdown()`
+
 **arguments:**
+
 None
 
 **returns:**
+
 Nothing
 
-This function closes all objects, connections and files that were used (such as raw data files).
+> This function closes all objects, connections and files that were used (such as raw data files).
