@@ -27,13 +27,17 @@ These properties can be set when initializing the object, but there should be me
 **arguments:**
 - psychopyWindow: _psychopy window object_ assumes that the psychopy window has the unit set to degrees
 
-[implemented so far]
+
 
 And it should have a few methods to do things.
 
 At the start that would be:
 
 `initialize()`
+
+
+
+---
 
 `calibrate()`
 
