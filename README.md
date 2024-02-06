@@ -15,56 +15,69 @@ The object will have a few properties:
 
 These properties can be set when initializing the object, which makes a call to each the following 4 functions:
 
-`setEyetracker()`
+### `setEyetracker()`
+
 **arguments:**
+
 - tracker: _string_: ['eyelink', 'livetrack', 'mouse']
 
-This tells the EyeTracker object which kind of eye-tracker to use.
-
 **returns:**
+
 Nothing, but raises a Warning for incorrect input, which will stop the experiment and print the warning.
 
-`trackEyes()`
+> This tells the EyeTracker object which kind of eye-tracker to use.
+
+### `trackEyes()`
+
 **arguments:**
+
 - trackEyes: _list of 2 booleans_: left and right eye
 
-This tells the eye-tracker which eyes are to be monitored. They will both be used for instantaneous gaze samples, and stored in the raw eye-tracking data files.
-
 **returns:**
+
 Nothing, but raises a Warning for incorrect input, which will stop the experiment and print the warning.
 
-`setFixationWindow()`
+> This tells the eye-tracker which eyes are to be monitored. They will both be used for instantaneous gaze samples, and stored in the raw eye-tracking data files.
+
+### `setFixationWindow()`
+
 **arguments:**
+
 - fixationWindow: _number_ (float, int, ...) setting the maximum deviation from the fixation point in the units of the psychopy window
 
-We've previously talked about setting this to 2 dva, but maybe we should reduce this to 1.5 dva.
-
 **returns:**
+
 Nothing, but raises a Warning for incorrect input, which will stop the experiment and print the warning.
 
-`setPsychopyWindow()`
+> We've previously talked about setting this to 2 dva, but maybe we should reduce this to 1.5 dva.
+
+### `setPsychopyWindow()`
+
 **arguments:**
+
 - psychopyWindow: _psychopy window object_ assumes that the psychopy window has the unit set to degrees
 
 **returns:**
+
 Nothing, but raises a Warning for incorrect input, which will stop the experiment and print the warning.
 
-By default the psychopy window should be in degrees visual angle (dva, which they call `deg`). For the EyeLink _I think_ we need a window object using pixels, with the top-left corner at (0,0) and y-coords increasing when going down on the screen.
-
-And it should have a few methods to do things.
+> By default the psychopy window should be in degrees visual angle (dva, which they call `deg`). For the EyeLink _I think_ we need a window object using pixels, with the top-left corner at (0,0) and y-coords increasing when going down on the screen.
 
 ## Eye-Tracker initialization and calibration
 
-At the start that would be:
+At the start of the experiment we need to get everything ready, using initialization and then intermittently we need to do calibration. So those two steps are split into two functions.
 
-`initialize()`
+### `initialize()`
+
 **arguments:**
+
 None
 
 **returns:**
+
 Nothing... but, perhaps this should be in a try/catch block (or several of them) to raise an Error when something goes wrong.
 
-This method sets up a connection to the eye-tracker, and makes it ready for the next step: calibration.
+> This method sets up a connection to the eye-tracker, and makes it ready for the next step: calibration.
 
 ---
 
