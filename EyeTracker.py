@@ -4,6 +4,7 @@ import numbers
 import numpy as np
 import time
 import math
+import os
 
 # to test if input objects are valid psychopy classes:
 import psychopy
@@ -22,7 +23,7 @@ from psychopy import core, event, visual
 
 class EyeTracker:
 
-    def __init__(self, tracker=None, trackEyes=[False, False], fixationWindow=None, psychopyWindow=None):
+    def __init__(self, tracker=None, trackEyes=[False, False], fixationWindow=None, psychopyWindow=None, filefolder=None, samplemode=None):
 
         # these three function check the user input,
         # and store it for future use
@@ -33,10 +34,13 @@ class EyeTracker:
         self.trackEyes(trackEyes)
         self.setFixationWindow(fixationWindow)
         self.setPsychopyWindow(psychopyWindow)
+        self.setFilefolder(filefolder)
+        self.setSamplemode(samplemode)
 
         # things below this comment are still up for change... depends a bit on how the EyeLink does things
 
         # maybe these should be a property that has a function to set it?
+        # it's only used for the LiveTrack, so no...
         self.calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
 
         # the innner and outer calibration dot size can be changed later on, but the stimuli will have already been made...
@@ -77,10 +81,8 @@ class EyeTracker:
                         self.trackEyes = trackEyes
                     else:
                         raise Warning("one or both eyes must be tracked")
-                else:
-                    raise Warning("trackEyes must be a list of booleans")
-            else:
-                raise Warning("trackEyes must be a list of length 2")
+                else:        self.setFilefolde(filefolder)
+        self.setSamplemode(samplemode)
         else:
             raise Warning("trackEyes must be a list")
 
@@ -98,6 +100,28 @@ class EyeTracker:
             self.psychopyWindow = psychopyWindow
         else:
             raise Warning("psychopyWindow must by a psychopy Window")
+
+
+    def setFilefolder(self, filefolder):
+        if isinstance(filefolder, str):
+            # check if it is an existing path
+            if os.path.isdir(filefolder):
+                self.filefolder = filefolder
+            else:
+                raise Warning("filefolder is not a valid or existing path: %s"%(filefolder))
+        else:
+            raise Warning("filefolder must be a string")
+        
+
+    def setSamplemode(self, samplemode):
+        if isinstance(samplemode, str):
+            if samplemode in ['both', 'left', 'right', 'average']:
+                self.samplemode = samplemode
+            else:
+                raise Warning("unkown samplemode: %s"%(samplemode))
+        else:
+            raise Warning("samplemode must be a string")
+
 
     def setupEyeLink(self):
         

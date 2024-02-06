@@ -1,8 +1,6 @@
 # Intrepid 2a EyeTracking
 
-This provides an `EyeTracker` object that can be used to interact with either an EyeLink or a LiveTrack eye-tracker. For now we also plan on implementing a dummy mouse tracker, to be able to test the behavioral part of experiments.
-
-An object that implements some eye tracking functionality for the EyeLink, the LiveTrack Lightning, as well as a debug mode using the mouse.
+This provides a psychopy-compatible `EyeTracker` object that can be used to interact with either an EyeLink or a LiveTrack eye-tracker. We also plan on implementing a dummy mouse tracker, to be able to test/debug the behavioral side of experiments without an eye-tracker.
 
 ## EyeTracker object initialization
 
@@ -12,6 +10,12 @@ The object will have a few properties:
 - toggle for tracking each eye
 - window for accepting a fixation
 - the psychopy window used for the experiment (the LiveTrack version will use that for calibration, the Eyelink version will use it convert EyeLink stuff back to dva properly)
+
+_not implemented yet:_
+- filefolder: _string:_ a path to a folder to store eye-tracker data, namely:
+    1. raw data files, and
+    2. calibration info (live-track only)
+- samplemode: _string:_ ['all','right','left','average'] what kind of samples to return when calling `lastSample()`, default: 'average'
 
 These properties can be set when initializing the object, which makes a call to each the following 4 functions:
 
@@ -188,7 +192,8 @@ Nothing
 
 ### `shutdown()`
 
-**arguments:**
+**arguments:**An object that implements some eye tracking functionality for the EyeLink, the LiveTrack Lightning, as well as a debug mode using the mouse.
+
 
 None
 
