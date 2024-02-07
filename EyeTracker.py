@@ -102,7 +102,10 @@ class EyeTracker:
 
     def setPsychopyWindow(self, psychopyWindow):
         if isinstance(psychopyWindow, psychopy.visual.window.Window):
-            self.psychopyWindow = psychopyWindow
+            if psychopyWindow.units == 'deg':
+                self.psychopyWindow = psychopyWindow
+            else:
+                raise Warning("psychopyWindow must have units set to 'deg'")
         else:
             raise Warning("psychopyWindow must by a psychopy Window")
 
