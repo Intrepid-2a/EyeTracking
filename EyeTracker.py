@@ -24,12 +24,18 @@ from psychopy import core, event, visual
 
 class EyeTracker:
 
-    def __init__(self, tracker=None, trackEyes=[False, False], fixationWindow=None, psychopyWindow=None, filefolder=None, samplemode=None):
+    def __init__(self, 
+                 tracker=None, 
+                 trackEyes=[False, False], 
+                 fixationWindow=None, 
+                 psychopyWindow=None, 
+                 filefolder=None, 
+                 samplemode=None):
 
-        # these three function check the user input,
-        # and store it for future use
+        # the functions below check the user input,
+        # and store it for future use if OK
         # they can also be used later on to change how the object works
-        # and they are device-agnostic
+        # and are supposed to be device-agnostic
 
         self.setEyetracker(tracker)
         self.trackEyes(trackEyes)
@@ -41,7 +47,7 @@ class EyeTracker:
         # things below this comment are still up for change... depends a bit on how the EyeLink does things
 
         # maybe these should be a property that has a function to set it?
-        # it's only used for the LiveTrack, so no...
+        # it's only used for the LiveTrack, so probably not...
         self.calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
 
         # the innner and outer calibration dot size can be changed later on, but the stimuli will have already been made...
@@ -51,7 +57,7 @@ class EyeTracker:
         self.N_calibrations = 0
         self.N_rawdatafiles = 0
 
-        self.setTargetStim()
+        self.__createTargetStim()
 
 
 
@@ -330,10 +336,17 @@ class EyeTracker:
         # do calibration... this needs to be rewritten...
         # LTcal(cfg=cfg, trackLeftEye=trackLeftEye, trackRightEye=trackRightEye)
 
+        [ width, height, sampleRate, offsetX, offsetY ] = LiveTrack.GetCaptureConfig()
+        self.__LiveTrackConfig = { 'width'      : width,
+                                   'height'     : height,
+                                   'sampleRate' : sampleRate,
+                                   'offsetX'    : offsetX,
+                                   'offsetY'    : offsetY      }
+
     def __DM_initialize(self):
         print('initialize dummy mouse tracker')
         self.__mousetracker = event.Mouse( visible = True,
-                                           newPos = None,
+                                           newPos = None,                    # what does this even do?
                                            win = self.psychopyWindow )
         
 
@@ -348,6 +361,11 @@ class EyeTracker:
 
     def __EL_calibrate(self):
         print('calibrate EyeLink: not implemented')
+
+
+        self.N_calibrations += 1
+        self.comment('calibration %d')
+        # self.savecalibration() # not sure if this function will just do nothing or if it will not exist for the EyeLink case
 
     def __LT_calibrate(self):
         print('calibrate livetrack')
@@ -555,18 +573,19 @@ class EyeTracker:
         self.LiveTrack.SetResultsTypeCalibrated()
 
         self.N_calibrations += 1
+        self.comment('calibration %d')
         self.savecalibration()
 
     def __DM_calibrate(self):
         print('dummy mouse calibration')
-        print('(does nothing)')os.path.isdir()
+        print('(does nothing)')
     # region
 
     def savecalibration(self):
         raise Warning("default function: tracker not set")
 
     def __EL_savecalibration(self):
-        print('can we even save the EyeLink calibration?')
+        print('saving calibrations not implemented for the EyeLink')
 
     def __LT_savecalibration(self):
 
@@ -586,7 +605,7 @@ class EyeTracker:
         out_file.close()
 
     def __DM_savecalibration(self):
-        print('not saving mouse calibration, it is 1:1')
+        print('not saving mouse calibration')
 
     
     # endregion
@@ -644,13 +663,56 @@ class EyeTracker:
         
 
     def __LT_lastsample(self):
-        print('not implemented: getting last livetrack sample')
-        data = self.LiveTrack.GetLastResult()
+        # data = LiveTrack.GetBufferedEyePositions(0,fixDurSamples,0) # this would get the last x samples, given by the second argument
+        data = self.LiveTrack.GetLastResult() # gets only the very last sample
+
         # this needs to be formatted in some standard way that is the same for all eye-tracker devices
+        sample = {}
+        if self.samplemode in ['both','left','average']:
+            if self.trackEyes[0]:
+                if data.Tracked:
+                    sample['left'] = [data.GazeX, data.GazeY]
+                else:
+                    sample['left'] = [np.NaN, np.NaN]
+        if self.samplemode in ['both','right','average']:
+            if self.trackEyes[1]:
+                if data.TrackedRight:
+                    sample['right'] = [data.GazeXRight, data.GazeYRight]
+                else:
+                    sample['right'] = [np.NaN, np.NaN]
+
+        if self.samplemode == 'average':
+            X = []
+            Y = []
+            # skip NAN values?
+            if data.Tracked:
+                X.append(sample['left'][0])
+                Y.append(sample['left'][1])
+            if data.TrackedRight:
+                X.append(sample['right'][0])
+                Y.append(sample['right'][1])
+            if (any([data.Tracked, data.TrackedRight])):
+                sample['average'] = [np.mean(X), np.mean(Y)]
+
+        return(sample)
 
     def __DM_lastsample(self):
         print('not implemented: getting last dummy mouse sample')
         data = self.__mousetracker.getPos()
+
+        sample = {}
+
+        if self.samplemode == 'both':
+            sample['left'] = data
+            sample['right'] = data
+        if self.samplemode == 'left':
+            sample['left'] = data
+        if self.samplemode == 'right':
+            sample['right'] = data
+        if self.samplemode == 'average':
+            sample['average'] = data
+
+        return(sample)
         # this needs to be formatted in some standard way that is the same for all eye-tracker devices
         # copied to each eye?
 
@@ -704,9 +766,19 @@ class EyeTracker:
     # endregion
 
 
-    def setTargetStim(self):
 
-        self.target = visual.TargetStim(self.psychopyWindow, radius=self.fixDotOutDeg/2, innerRadius=self.fixDotInDeg/2, fillColor=[-1,-1,-1], innerFillColor=[1,1,1], lineWidth=0, innerLineWidth=0, borderColor=None, innerBorderColor=None)
+
+    def __createTargetStim(self):
+
+        self.target = visual.TargetStim(self.psychopyWindow, 
+                                        radius=self.fixDotOutDeg/2, 
+                                        innerRadius=self.fixDotInDeg/2, 
+                                        fillColor=[-1,-1,-1], 
+                                        innerFillColor=[1,1,1], 
+                                        lineWidth=0, 
+                                        innerLineWidth=0, 
+                                        borderColor=None, 
+                                        innerBorderColor=None)
 
 
 
