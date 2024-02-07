@@ -621,6 +621,8 @@ class EyeTracker:
 
     def __LT_startcollecting(self):
         print('not implemented: startcollecting LiveTrack')
+        # this should open a new file
+        # but only if a file is NOT open yet
 
     def __DM_startcollecting(self):
         print('not implemented: startcollecting dummy mouse')
@@ -638,6 +640,8 @@ class EyeTracker:
         print('not implemented: stopcollecting EyeLink')
 
     def __LT_stopcollecting(self):
+        # check if a file is open!
+        # if so, close it
         print('not implemented: stopcollecting LiveTrack')
 
     def __DM_stopcollecting(self):
@@ -761,9 +765,16 @@ class EyeTracker:
 
     def __LT_shutdown(self):
         print('not implemented yet: LiveTrack shutdown')
+        # this should stop data collection... if a file is open...
+        # the stopcollecting file should check if a file is open!
+        self.stopcollecting()
+
+        self.LiveTrack.Close()
 
     def __DM_shutdown(self):
         print('not implemented yet: dummy mouse shutdown')
+        # no need for any shutdown action, it seems:
+        # there are no files, and connections to close
 
     # endregion
 
