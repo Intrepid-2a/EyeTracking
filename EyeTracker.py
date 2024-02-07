@@ -727,17 +727,19 @@ class EyeTracker:
 
     def __EL_comment(self, comment):
         print('not implemented: storing a comment in the raw eyelink data file')
+        print('the EyeLink API calls this a message, as opposed to a command')
         # check if there is a current file where data is actively being recorded
         # format as a message that the EyeLink can handle?
         # - replace spaces with underscores?
         # - maximum length?
 
     def __LT_comment(self, comment):
-        print('not implemented: storing a comment in the raw livetrack data file')
-        # check if there is a current file where data is actively being recorded
+        self.LiveTrack.SetDataComment(comment)
+        time.sleep(1/self.__LiveTrackConfig['sampleRate'])
+
 
     def __DM_comment(self, comment):
-        print('not implemented: storing a comment in the raw dummy mouse data file')
+        print('DM comment: %s'%(comment))
         # also: probably won't be implemented, because there is no such file?
         # this would require starting a different thread or so, that takes all the mouse coordinates and... no doesn't sound like a plan to me
 
