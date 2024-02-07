@@ -10,12 +10,8 @@ The object will have a few properties:
 - toggle for tracking each eye
 - window for accepting a fixation
 - the psychopy window used for the experiment (the LiveTrack version will use that for calibration, the Eyelink version will use it convert EyeLink stuff back to dva properly)
-
-_not implemented yet:_
-- filefolder: _string:_ a path to a folder to store eye-tracker data, namely:
-    1. raw data files, and
-    2. calibration info (live-track only)
-- samplemode: _string:_ ['all','right','left','average'] what kind of samples to return when calling `lastSample()`, default: 'average'
+- a file folder to store eye-tracker data in
+- specify the sample mode for gaze samples
 
 These properties can be set when initializing the object, which makes a call to each the following 4 functions:
 
@@ -66,6 +62,26 @@ Nothing, but raises a Warning for incorrect input, which will stop the experimen
 Nothing, but raises a Warning for incorrect input, which will stop the experiment and print the warning.
 
 > By default the psychopy window should be in degrees visual angle (dva, which they call `deg`). For the EyeLink _I think_ we need a window object using pixels, with the top-left corner at (0,0) and y-coords increasing when going down on the screen.
+
+### `setFilefolder()`
+
+**arguments:**
+
+- filefolder: _string:_ the path to an **existing** folder to store raw eye-tracking data files (and for the LiveTrack: calibration parameters), if filefolder is a string of length 0 ('') no files will be stored (and a note is printed)
+
+**returns:**
+
+- Nothing, but raises an error if it is not a valid path.
+
+### `setSamplemode()`
+
+**argments:**
+
+- samplemode: _string:_ ['both', 'left', 'right', 'average']
+
+**returns:**
+
+Nothing, but raises an error if no valid samplemode is set.
 
 ## Eye-Tracker initialization and calibration
 

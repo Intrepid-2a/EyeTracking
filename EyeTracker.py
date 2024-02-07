@@ -109,11 +109,16 @@ class EyeTracker:
 
     def setFilefolder(self, filefolder):
         if isinstance(filefolder, str):
-            # check if it is an existing path
-            if os.path.isdir(filefolder):
-                self.filefolder = filefolder
+            if len(filefolder) == 0:
+                self.storefiles = False
+                # check if it is an existing path
+                if os.path.isdir(filefolder):
+                    self.storefiles = True
+                    self.filefolder = filefolder
+                else:
+                    raise Warning("filefolder is not a valid or existing path: %s"%(filefolder))
             else:
-                raise Warning("filefolder is not a valid or existing path: %s"%(filefolder))
+                print('NOTE: not storing any files since filefolder is an empty string')
         else:
             raise Warning("filefolder must be a string")
         
