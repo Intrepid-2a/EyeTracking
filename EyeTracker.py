@@ -5,6 +5,7 @@ import numpy as np
 import time
 import math
 import os
+import json
 
 # to test if input objects are valid psychopy classes:
 import psychopy
@@ -422,7 +423,7 @@ class EyeTracker:
                     pgDistL = max([max(VectX)-min(VectX),max(VectY)-min(VectY)])
 
                     # Check if the maximum vector difference is within the defined
-                    # limit for a fixation (fixWindow) and all samples are tracked, and
+                    # limit for a fixation (fixWindow) and all samples ajsone tracked, and
                     # the time to wait for fixations (waitTimeForFix) has passed, for
                     # the left eye
                     if pgDistL<=fixThreshold and np.all(Tracked) and (time.time()-t0)>setupDelay/1000:
