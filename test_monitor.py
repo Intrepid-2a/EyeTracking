@@ -7,8 +7,10 @@ gammaGrid = np.array([  [  0., 1., 1., np.nan, np.nan, np.nan  ],
                         [  0., 1., 1., np.nan, np.nan, np.nan  ],
                         [  0., 1., 1., np.nan, np.nan, np.nan  ]], dtype=float)
 
-resolution = [640, 320]
-size = [59.8, 33.6]
+resolution = [960, 540]
+# resolution = [1920, 1080]
+size = [29.8, 16.8]
+# size = [59.8, 33.6]
 distance = 50
 
 
@@ -19,7 +21,7 @@ mymonitor.setGammaGrid(gammaGrid)
 mymonitor.setSizePix(resolution)
 
 # win = visual.Window(resolution,allowGUI=True, monitor=mymonitor, units='deg', viewPos = [13,0], fullscr = False, color=[.5,-1,.5])
-mywin = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='deg', fullscr = False, color=[-0.5,-0.5,-0.5], screen=1) # back to same lay-out as in blindspot mapping task, to keep stuff really aligned
+mywin = visual.Window(resolution, allowGUI=True, monitor=mymonitor, units='pix', fullscr = False, color=[-0.5,-0.5,-0.5], screen=1) # back to same lay-out as in blindspot mapping task, to keep stuff really aligned
 
 # mywin = visual.Window()
 

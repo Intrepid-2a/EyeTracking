@@ -14,6 +14,8 @@ import psychopy
 # and psychopy.visual.*Stim (circleStim?)
 from psychopy import core, event, visual
 
+from psychopy.tools import monitorunittools
+
 
 # this file has just 1 object that is needed: EyeTracker
 # for now, it can be used as:
@@ -27,10 +29,13 @@ class EyeTracker:
     def __init__(self, 
                  tracker=None, 
                  trackEyes=[False, False], 
-                 fixationWindow=None, 
+                 fixationWindow=None,
+                 minFixDur=None,
+                 fixTimeout=None,
                  psychopyWindow=None, 
                  filefolder=None, 
                  samplemode=None):
+
 
         # the functions below check the user input,
         # and store it for future use if OK
@@ -40,6 +45,8 @@ class EyeTracker:
         self.setEyetracker(tracker)
         self.trackEyes(trackEyes)
         self.setFixationWindow(fixationWindow)
+        self.setMinFixDur(minFixDur)
+        self.setFixTimeout(fixTimeout)
         self.setPsychopyWindow(psychopyWindow)
         self.setFilefolder(filefolder)
         self.setSamplemode(samplemode)
@@ -53,6 +60,9 @@ class EyeTracker:
         
         self.__fileOpen = False
         self.__recording = False
+
+        self.__EL_currentfile = ''
+        self.__EL_downloadFiles = []
 
         self.__N_calibrations = 0
         self.__N_rawdatafiles = 0
@@ -105,6 +115,27 @@ class EyeTracker:
                 raise Warning("fixationWindow must be larger than 0")
         else:
             raise Warning("fixationWindow must be a number")
+
+    def setMinFixDur(self, minFixDur):
+        if isinstance(minFixDur, numbers.Number):
+            if minFixDur > 0:
+                self.minFixDur = minFixDur
+            else:
+                raise Warning("minimum fixation duration must be larger than 0")
+        else:
+            raise Warning("minimum fixation duration must be a number")
+
+
+    def setFixTimeout(self, fixTimeout):
+        if isinstance(fixTimeout, numbers.Number):
+            if fixTimeout > self.minFixDur:
+                self.fixTimeout = fixTimeout
+            else:
+                raise Warning("fixation timeout must be larger than minimum fixation duration")
+        else:
+            raise Warning("fixation timeout must be a number")
+
+
 
     def setPsychopyWindow(self, psychopyWindow):
         if isinstance(psychopyWindow, psychopy.visual.window.Window):
@@ -161,6 +192,9 @@ class EyeTracker:
         # does this showwindow/hidewindow stuff need to be applied/bound to an extra window?
 
 
+        # constant to convert pixels to degrees for the case of the EyeLink only
+        self.__EL_p2df = monitorunittools.pix2deg(1, self.psychopyWindow.monitor)
+        self.__EL_offset = [(x-1)/2 for x in mywin.monitor.getSizePix()]
 
 
         # remap functions:
@@ -169,8 +203,10 @@ class EyeTracker:
 
         self.lastsample = self.__EL_lastsample
 
+        self.openfile = self.__EL_openfile
         self.startcollecting = self.__EL_startcollecting
         self.stopcollecting = self.__EL_stopcollecting
+        self.closefile = self.__EL_closefile
 
         self.comment = self.__EL_comment
         self.shutdown = self.__EL_shutdown
@@ -188,8 +224,10 @@ class EyeTracker:
 
         self.lastsample = self.__LT_lastsample
 
+        self.openfile = self.__LT_openfile
         self.startcollecting = self.__LT_startcollecting
         self.stopcollecting = self.__LT_stopcollecting
+        self.closefile = self.__LT_closefile
 
         self.comment = self.__LT_comment
         self.shutdown = self.__LT_shutdown
@@ -208,8 +246,10 @@ class EyeTracker:
 
         self.lastsample = self.__DM_lastsample
 
+        self.openfile = self.__DM_openfile
         self.startcollecting = self.__DM_startcollecting
         self.stopcollecting = self.__DM_stopcollecting
+        self.closefile = self.__DM_closefile
 
         self.comment = self.__DM_comment
         self.shutdown = self.__DM_shutdown
@@ -611,6 +651,78 @@ class EyeTracker:
     # endregion
 
 
+    # function to open new raw data file
+    # region
+
+    def openfile(self, filename=None):
+        raise Warning('default function: tracker not set')
+        # has to do:
+        # - make filename if not given
+        # - if filename has a path: strip it
+        # - make sure te filename is formatted correctly: extension is EDF (eyelink) or CSV (livetrack)
+        # - check if currently, a file is open
+        # - if so: close it (and print a statement!)
+        # - open the new file
+        # - set self.__fileOpen True (do we need to store the current filename?)
+        # - increment self.__N_rawdatafiles by +1
+
+
+    def __EL_openfile(self, filename=None):
+        print('not implemented: openfile EyeLink')
+
+        if self.__fileOpen:
+            self.closefile()
+            print('note: closed open file before opening a new file')
+
+        filename = saneFilename(filename, ext='.edf')
+
+
+    def __LT_openfile(self, filename=None):
+
+        if self.__fileOpen:
+            self.closefile()
+            print('note: closed open file before opening a new file')
+
+        filename = saneFilename(filename, ext='.csv')
+
+        self.LiveTrack.SetDataFilename(os.path.join(self.filefolder,filename))
+
+        self.__fileOpen = True
+        self.__N_rawdatafiles += 1
+
+
+    def __DM_openfile(self, filename=None):
+        print('not opening raw data file for dummy mouse tracker')
+
+
+    def saneFilename(self, filename, ext):
+
+        if filename == None:
+            filename = 'raw_%d%s'%(self.__N_rawdatafiles+1, ext)
+        else:
+            if isinstance(filename, str):
+                if len(filename) > 0:
+                    if not(os.path.isfile(filename)):
+                        file_path, file_ext = os.path.splitext(filename)
+                        if not(file_ext in [ext,ext.upper()]):
+                            file_ext = '.csv'
+                            filename = file_path + file_ext
+                            print("changed file extention to '.csv'")
+                        if len(os.path.dirname(filename)) > 0:
+                            filename = os.path.basename(filename)
+                            print('storing in designated folder: path removed from filename')
+                    else:
+                        raise Warning('file already exists')
+                else:
+                    raise Warning('filename should have non-zero length')
+            else:
+                raise Warning('filename should be a string')
+
+        return(filename)
+
+    # endregion
+
+
     # function to start collecting raw data
     # region
     def startcollecting(self):
@@ -620,12 +732,10 @@ class EyeTracker:
         print('not implemented: startcollecting EyeLink')
 
     def __LT_startcollecting(self):
-        print('not implemented: startcollecting LiveTrack')
-        # this should open a new file
-        # but only if a file is NOT open yet
+        self.LiveTrack.StartTracking()
 
     def __DM_startcollecting(self):
-        print('not implemented: startcollecting dummy mouse')
+        print('not implemented: startcollecting dummy mouse data')
 
     # endregion
 
@@ -640,17 +750,54 @@ class EyeTracker:
         print('not implemented: stopcollecting EyeLink')
 
     def __LT_stopcollecting(self):
-        # check if a file is open!
-        # if so, close it
-        print('not implemented: stopcollecting LiveTrack')
+        self.LiveTrack.StopTracking()
 
     def __DM_stopcollecting(self):
-        print('not implemented: stopcollecting dummy mouse')
+        print('not implemented: stopcollecting dummy mouse data')
 
 
     # endregion
 
+    # function to close existing raw data file
+    # region
 
+    def closefile(self):
+        raise Warning("default function: tracker not set")
+
+    def __EL_closefile(self):
+        print('not implemented yet')
+        # send command to EyeLink to close the EDF with raw data
+
+        self.__EL_currentfile = ''
+        self.__EL_downloadFiles = []
+
+
+
+        if self.__fileOpen:
+            if len(self.__EL_currentfile) == 0:
+                print('no file to close')
+            else:
+
+                # # # # # # # # # # # # #
+                # do the actual closing here
+
+                self.__EL_downloadFiles.append(self.__EL_currentfile)
+                self.__EL_currentfile = ''
+                self.__fileOpen = False
+        else:
+            print('no file to close')
+            
+
+    def __LT_closefile(self):
+        if self.__fileOpen:
+            self.LiveTrack.CloseDataFile()
+            self.__fileOpen = False
+        else:
+            print('no file to close')
+
+
+
+    # endregion
 
 
     # the following functions are used during the experiment:
@@ -663,7 +810,18 @@ class EyeTracker:
 
     def __EL_lastsample(self):
         print('not implemented: getting last eyelink sample')
-        # probably needs to be converted to dva... using built-in psychopy functions
+        # probably needs to be converted to dva... using built-in psychopy functions?
+        # do we need to account for the origin/offset?
+        o = self.__EL_offset # subtract this from X,Y coordinates to get coordinates with (0,0) at the center of the screen
+        # do we need to scale from pixels to degrees? (in this case, this is a flat multiplication factor, more than good enough around fixation)
+        p = self.__EL_p2df # multiply pixel values by this to get degrees...
+
+
+        # # # # # # ## # # # 
+        # get the sample, and convert to internal sample format
+        # # # # # # ## # # # 
+
+        return False
         
 
     def __LT_lastsample(self):
@@ -724,6 +882,73 @@ class EyeTracker:
     # endregion
 
 
+    def gazeInFixationWindow(self):
+
+        sample = self.lastsample()
+        check_samples = self.getSamplesToCheck
+        infix = True
+
+        for key in sample.keys():
+            if key in check_samples:
+                d = np.sqrt(np.sum(np.array(sample[key])**2))
+                if d > self.fixationWindow:
+                    infix = False
+
+        return infix
+
+
+    def getSamplesToCheck(self):
+
+        return( {'both':['left','right'],
+                 'left':['left'],
+                 'right':['right'],
+                 'average':['average']}[self.samplemode] )
+
+    def waitForFixation(self, minFixDur=None, fixTimeout=None):
+
+        if minFixDur = None:
+            minFixDur = self.minFixDur
+        if fixTimeout = None:
+            fixTimeout = self.fixTimeout
+
+        # most the initially set values should be used, but we do 1 sanity check here:
+        # if the initially set values are used, this should already be true:
+        if fixTimeout < minFixDur:
+            raise Warning("fixation timeout should be longer than minimum fixation duration")
+
+        starttime = time.time()
+        timeout = starttime + fixTimeout
+        now = starttime
+
+        fixationStart = None
+
+        while now < timeout:
+
+            self.target.draw()
+            self.psychopyWindow.flip()
+
+            now = time.time()
+
+            fixated = self.gazeInFixationWindow()
+
+            if fixated:
+                if fixationStart == None:
+                    fixationStart = now
+                else:
+                    if (now - fixationStart) >= minFixDur:
+                        return True
+            else:
+                fixationStart = None
+        
+        return False
+
+
+
+
+
+
+
+
     # insert a comment into the raw data file storing tracker data:
     # region
     def comment(self, comment):
@@ -738,8 +963,10 @@ class EyeTracker:
         # - maximum length?
 
     def __LT_comment(self, comment):
-        self.LiveTrack.SetDataComment(comment)
-        time.sleep(1/self.__LiveTrackConfig['sampleRate'])
+
+        if self.__fileOpen:
+            self.LiveTrack.SetDataComment(comment)
+            time.sleep(1/self.__LiveTrackConfig['sampleRate'])
 
 
     def __DM_comment(self, comment):
@@ -764,11 +991,8 @@ class EyeTracker:
         print('not implemented yet: EyeLink shutdown')
 
     def __LT_shutdown(self):
-        print('not implemented yet: LiveTrack shutdown')
-        # this should stop data collection... if a file is open...
-        # the stopcollecting file should check if a file is open!
         self.stopcollecting()
-
+        self.closefile()
         self.LiveTrack.Close()
 
     def __DM_shutdown(self):
@@ -783,6 +1007,7 @@ class EyeTracker:
 
     def __createTargetStim(self):
         
+        # should these be accessible / changeble by the user?
         fixDotInDeg  = 0.2 # inner circle
         fixDotOutDeg = 1.0
         
