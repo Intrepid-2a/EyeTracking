@@ -48,14 +48,14 @@ class EyeTracker:
 
         # maybe these should be a property that has a function to set it?
         # it's only used for the LiveTrack, so probably not...
-        self.calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
+        self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
 
-        # the innner and outer calibration dot size can be changed later on, but the stimuli will have already been made...
-        self.fixDotInDeg  = 0.2 # inner circle
-        self.fixDotOutDeg = 1.0
+        
+        self.__fileOpen = False
+        self.__recording = False
 
-        self.N_calibrations = 0
-        self.N_rawdatafiles = 0
+        self.__N_calibrations = 0
+        self.__N_rawdatafiles = 0
 
         self.__createTargetStim()
 
@@ -363,8 +363,8 @@ class EyeTracker:
         print('calibrate EyeLink: not implemented')
 
 
-        self.N_calibrations += 1
-        self.comment('calibration %d')
+        self.__N_calibrations += 1
+        self.comment('calibration %d'%(self.__N_calibrations))
         # self.savecalibration() # not sure if this function will just do nothing or if it will not exist for the EyeLink case
 
     def __LT_calibrate(self):
@@ -377,8 +377,8 @@ class EyeTracker:
         fixTimeout = 5  # timeout duration in seconds (point is skipped!)
         fixThreshold = 5 # pixel window for all samples within a 'fixation'
 
-        ntargets = np.shape(self.calibrationTargets)[0]
-        tgtLocs = self.calibrationTargets.astype(float) # make sure locations are floats
+        ntargets = np.shape(self.__calibrationTargets)[0]
+        tgtLocs = self.__calibrationTargets.astype(float) # make sure locations are floats
 
         # show calibration on separate video window (not necessary):
         # if self.useVideo:
@@ -421,7 +421,7 @@ class EyeTracker:
             # self.cal_dot_i.pos = self.calibrationTargets[target_idx,:]
             # self.cal_dot_i.draw()
 
-            self.target.pos = self.calibrationTargets[target_idx,:]
+            self.target.pos = self.__calibrationTargets[target_idx,:]
             self.target.draw()
 
             self.psychopyWindow.flip()
@@ -485,15 +485,15 @@ class EyeTracker:
                             VectYR[target_idx] = np.median(VectYRight)
                             GlintXR[target_idx] = np.median(GlintXRight)
                             GlintYR[target_idx] = np.median(GlintYRight)
-                            print('Fixation #',str(target_idx+1),str(self.calibrationTargets[target_idx,:]),': Found valid fixation for right eye')
+                            print('Fixation #',str(target_idx+1),str(self.__calibrationTargets[target_idx,:]),': Found valid fixation for right eye')
                             gotFixRight = 1 # good fixation aquired
                 
 
                 if (time.time()-t0)>fixTimeout:
                     if not gotFixLeft and self.trackEyes[0]>0:
-                        print('Fixation #',str(target_idx+1),str(self.calibrationTargets[target_idx,:]),': Did not get fixation for left eye (timeout)')
+                        print('Fixation #',str(target_idx+1),str(self.__calibrationTargets[target_idx,:]),': Did not get fixation for left eye (timeout)')
                     if not gotFixRight and self.trackEyes[1]>0:
-                        print('Fixation #',str(target_idx+1),str(self.calibrationTargets[target_idx,:]),': Did not get fixation for right eye (timeout)')
+                        print('Fixation #',str(target_idx+1),str(self.__calibrationTargets[target_idx,:]),': Did not get fixation for right eye (timeout)')
                     break # fixation timed out
 
                 
@@ -569,17 +569,17 @@ class EyeTracker:
         # if useVideo:
         #     self.LiveTrackGS.VideoStop()
 
-
         self.LiveTrack.SetResultsTypeCalibrated()
 
-        self.N_calibrations += 1
-        self.comment('calibration %d')
+        self.__N_calibrations += 1
+        self.comment('calibration %d'%(self.__N_calibrations))
         self.savecalibration()
 
     def __DM_calibrate(self):
-        print('dummy mouse calibration')
-        print('(does nothing)')
-    # region
+        self.__N_calibrations += 1
+        self.comment('calibration %d'%(self.__N_calibrations))
+    
+    # endregion
 
     def savecalibration(self):
         raise Warning("default function: tracker not set")
@@ -597,7 +597,7 @@ class EyeTracker:
             calibrations['right'] = self.LiveTrack.GetCalibration(eye=1)
 
         # write calibration info to a json file:
-        filename = '%s/calibration_%s.json'%(self.filefolder, self.N_calibrations)
+        filename = '%s/calibration_%s.json'%(self.filefolder, self.__N_calibrations)
         out_file = open(filename, "w")
         json.dump( calibrations,
                    fp=out_file,
@@ -782,10 +782,13 @@ class EyeTracker:
 
 
     def __createTargetStim(self):
-
+        
+        fixDotInDeg  = 0.2 # inner circle
+        fixDotOutDeg = 1.0
+        
         self.target = visual.TargetStim(self.psychopyWindow, 
-                                        radius=self.fixDotOutDeg/2, 
-                                        innerRadius=self.fixDotInDeg/2, 
+                                        radius=fixDotOutDeg/2, 
+                                        innerRadius=fixDotInDeg/2, 
                                         fillColor=[-1,-1,-1], 
                                         innerFillColor=[1,1,1], 
                                         lineWidth=0, 

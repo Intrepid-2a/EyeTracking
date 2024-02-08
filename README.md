@@ -131,20 +131,6 @@ Nothing... but/and:
 
 While running the experiment, on a frame-by-frame basis:
 
-### `startfixation()`
-
-**arguments:**
-
-- fixationPoint: _tuple of numbers:_ [X,Y] coordinates of the desired fixation in the units of the psychopy window (0)
-- duration: _number:_ (float or int) duration (in seconds) that the fixation point is fixated, on each consecutive frame in that period
-- timeout: _number:_ (float or int) if the fixation point is not fixated for this amount of time, the procedure times out with
-
-**returns:**
-
-- _boolean:_ True: participant fixated the point, False: participant did not fixate the point
-
-> This waits for participants to fixate
-
 ### `lastsample()`
 
 **arguments:**
@@ -154,6 +140,20 @@ None
 **returns:**
 
 A dictionary with the last gaze sample, in the format ... (defined somewhere else)
+
+### `waitForFixation()`
+
+**arguments:**
+
+- fixationPoint: _tuple of numbers:_ [X,Y] coordinates of the desired fixation in the units of the psychopy window, defaults to (0,0)
+- duration: _number:_ (float or int) duration (in seconds) that the fixation point has to be fixated, on each consecutive frame in that period
+- timeout: _number:_ (float or int) if the fixation point is not fixated for this amount of time (in seconds), the procedure times out
+
+**returns:**
+
+- _boolean:_ True: participant fixated the point, False: participant did not fixate the point within timeout seconds
+
+> This waits for participants to fixate a point, e.g. to start a trial
 
 ### `driftFixation()`
 
@@ -171,7 +171,7 @@ Nothing
 
 **arguments:**
 
-- message: _string_ The message to be stored in the raw data file, right now / as soon as possible. This is primarily useful for segmenting raw eye-tracking data, so we can cut out trials, and events withing trials (stimulus onset / offset, and so on).
+- message: _string_ A message to be stored in the raw data file, right now / as soon as possible. This is primarily useful for segmenting raw eye-tracking data, so we can cut out trials, and events withing trials (stimulus onset / offset, and so on).
 
 **returns:**
 
@@ -179,7 +179,19 @@ Nothing
 
 ## Raw data storage:
 
-### `startcollecting()`
+### `openFile()`
+
+**arguments:**
+
+- filename: _string:_ optional filename for use within the filefolder path specified on initialization of the object
+
+**returns:**
+
+Nothing, but raises a warning if the file can't be opened.
+
+> The file name is stored in the filefolder specified when initializing the EyeTracker object. If no filename is specified, a standard filename is used, appended with an integer representing the number of files opened for the current instantiation of the object.
+
+### `startCollecting()`
 
 **arguments:**
 
@@ -189,9 +201,9 @@ None
 
 Nothing
 
-> This function makes a new raw data file (just enumerate them?) for storing raw eye-tracker data.
+> This function starts storing data in an open file.
 
-### `stopcollecting()`
+### `stopCollecting()`
 
 **arguments:**
 
@@ -201,15 +213,26 @@ None
 
 Nothing
 
-> This function makes a new raw data file (just enumerate them?) for storing raw eye-tracker data.
+> This function stops storing data in an open file.
+
+### `closeFile()`
+
+**arguments:**
+
+None
+
+**returns:**
+
+Nothing, but raises a warning if the file can't be closed.
+
+> This function closes a data file, if there is an open file. If there is no open file, the function does nothing.
 
 
 ## Closing the object
 
 ### `shutdown()`
 
-**arguments:**An object that implements some eye tracking functionality for the EyeLink, the LiveTrack Lightning, as well as a debug mode using the mouse.
-
+**arguments:**
 
 None
 
@@ -217,4 +240,4 @@ None
 
 Nothing
 
-> This function closes all objects, connections and files that were used (such as raw data files).
+> This function closes all objects, connections and files that were used (such as raw data files) and can be closed, depending on the eye-tracker used. In the case of the EyeLink it also downloads all closed data files.
