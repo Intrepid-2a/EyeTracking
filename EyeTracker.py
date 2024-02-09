@@ -194,7 +194,7 @@ class EyeTracker:
 
         # constant to convert pixels to degrees for the case of the EyeLink only
         self.__EL_p2df = monitorunittools.pix2deg(1, self.psychopyWindow.monitor)
-        self.__EL_offset = [(x-1)/2 for x in mywin.monitor.getSizePix()]
+        self.__EL_offset = np.array([(x-1)/2 for x in mywin.monitor.getSizePix()])
 
 
         # remap functions:
@@ -821,8 +821,30 @@ class EyeTracker:
         # get the sample, and convert to internal sample format
         # # # # # # ## # # # 
 
-        return False
-        
+                # for now this uses IOhub gaze position:
+        # the average of the left and right gaze position
+        # this could be expanded in the future
+        gpos = self.tracker.getLastGazePosition()
+        # gpos is either None (no valid tracking) or a tuple or list of 2 numbers: X/Y coordinates
+        if isinstance(gpos, (tuple, list)):
+            data = (np.array(gpos) - o) * p
+        else:
+            data = np.array([np.NaN, np.NaN])
+
+        sample = {}
+
+        if self.samplemode == 'both':
+            sample['left'] = data
+            sample['right'] = data
+        if self.samplemode == 'left':
+            sample['left'] = data
+        if self.samplemode == 'right':
+            sample['right'] = data
+        if self.samplemode == 'average':
+            sample['average'] = data
+
+        return(sample)
+
 
     def __LT_lastsample(self):
         # data = LiveTrack.GetBufferedEyePositions(0,fixDurSamples,0) # this would get the last x samples, given by the second argument
@@ -833,15 +855,15 @@ class EyeTracker:
         if self.samplemode in ['both','left','average']:
             if self.trackEyes[0]:
                 if data.Tracked:
-                    sample['left'] = [data.GazeX, data.GazeY]
+                    sample['left'] = np.array([data.GazeX, data.GazeY])
                 else:
-                    sample['left'] = [np.NaN, np.NaN]
+                    sample['left'] = np.array([np.NaN, np.NaN])
         if self.samplemode in ['both','right','average']:
             if self.trackEyes[1]:
                 if data.TrackedRight:
-                    sample['right'] = [data.GazeXRight, data.GazeYRight]
+                    sample['right'] = np.array([data.GazeXRight, data.GazeYRight])
                 else:
-                    sample['right'] = [np.NaN, np.NaN]
+                    sample['right'] = np.array([np.NaN, np.NaN])
 
         if self.samplemode == 'average':
             X = []
@@ -854,13 +876,13 @@ class EyeTracker:
                 X.append(sample['right'][0])
                 Y.append(sample['right'][1])
             if (any([data.Tracked, data.TrackedRight])):
-                sample['average'] = [np.mean(X), np.mean(Y)]
+                sample['average'] = np.array([np.mean(X), np.mean(Y)])
 
         return(sample)
 
     def __DM_lastsample(self):
         print('not implemented: getting last dummy mouse sample')
-        data = self.__mousetracker.getPos()
+        data = np.array(self.__mousetracker.getPos())
 
         sample = {}
 
