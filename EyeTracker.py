@@ -729,7 +729,7 @@ class EyeTracker:
         raise Warning("default function: tracker not set")
 
     def __EL_startcollecting(self):
-        print('not implemented: startcollecting EyeLink')
+        self.tracker.setRecordingState(True)
 
     def __LT_startcollecting(self):
         self.LiveTrack.StartTracking()
@@ -747,7 +747,8 @@ class EyeTracker:
         raise Warning("default function: tracker not set")
 
     def __EL_stopcollecting(self):
-        print('not implemented: stopcollecting EyeLink')
+        self.tracker.setRecordingState(False)
+
 
     def __LT_stopcollecting(self):
         self.LiveTrack.StopTracking()
@@ -810,12 +811,7 @@ class EyeTracker:
         # do we need to scale from pixels to degrees? (in this case, this is a flat multiplication factor, more than good enough around fixation)
         p = self.__EL_p2df # multiply pixel values by this to get degrees...
 
-
-        # # # # # # ## # # # 
-        # get the sample, and convert to internal sample format
-        # # # # # # ## # # # 
-
-                # for now this uses IOhub gaze position:
+        # for now this uses IOhub gaze position:
         # the average of the left and right gaze position
         # this could be expanded in the future
         gpos = self.tracker.getLastGazePosition()
@@ -957,9 +953,6 @@ class EyeTracker:
                 fixationStart = None
         
         return False
-
-
-
 
 
 
