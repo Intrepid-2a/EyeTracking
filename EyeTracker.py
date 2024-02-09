@@ -34,7 +34,8 @@ class EyeTracker:
                  fixTimeout=None,
                  psychopyWindow=None, 
                  filefolder=None, 
-                 samplemode=None):
+                 samplemode=None,
+                 calibrationpoints=9):
 
 
         # the functions below check the user input,
@@ -50,6 +51,7 @@ class EyeTracker:
         self.setPsychopyWindow(psychopyWindow)
         self.setFilefolder(filefolder)
         self.setSamplemode(samplemode)
+        self.setCalibrationpoints(calibrationpoints)
 
         # things below this comment are still up for change... depends a bit on how the EyeLink does things
 
@@ -171,6 +173,25 @@ class EyeTracker:
                 raise Warning("unkown samplemode: %s"%(samplemode))
         else:
             raise Warning("samplemode must be a string")
+
+
+
+    def setCalibrationpoints(self, calibrationpoints):
+        if isinstance(calibrationpoints, numbers.Number):
+            if calibrationpoins in [5,9]:
+                # allowed number of points?
+                self.calibrationpoints = calibrationpoints
+                if calibrationpoints == 5:
+                    self.__calibrationTargets = np.array([[0,0],                                  [6,6],[6,-6],[-6,6],[-6,-6]])
+                if calibrationpoints == 9:
+                    self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
+            else:
+                raise Warning("calibration points muct be 9 (default) or 5")
+        else:
+            raise Warning("calibration points must be a number")
+
+
+        eyetracker_config['calibration'] = dict(type='THIRTEEN_POINTS')
 
 
     def setupEyeLink(self):
@@ -351,6 +372,13 @@ class EyeTracker:
         eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
         eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
         eyetracker_config['calibration'] = dict(screen_background_color=(0,0,0))
+        if self.calibrationpoints == 5:
+            eyetracker_config['calibration'] = dict(type='FIVE_POINTS')
+        if self.calibrationpoints == 9:
+            eyetracker_config['calibration'] = dict(type='NINE_POINTS')
+        if self.storefiles:
+            eyetracker_config['default_native_data_file_name'] = 'ELgaze' # correct extention is added by IOhub
+            eyetracker_config['local_edf_dir'] = self.filefolder          # otherwise this ends up in the main folder where the experiment itself lives
         devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
 
         # not sure this needs to be stored, but let's just have the info available in the future:
@@ -400,8 +428,11 @@ class EyeTracker:
         raise Warning("set eyetracker before calibrating it")
 
     def __EL_calibrate(self):
-        print('calibrate EyeLink: not implemented')
 
+        self.hideWindow(self.psychopyWindow)
+        result = self.tracker.runSetupProcedure()
+        print("Calibration returned: ", result)
+        self.showWindow(self.psychopyWindow)
 
         self.__N_calibrations += 1
         self.comment('calibration %d'%(self.__N_calibrations))
@@ -613,7 +644,8 @@ class EyeTracker:
 
         self.__N_calibrations += 1
         self.comment('calibration %d'%(self.__N_calibrations))
-        self.savecalibration()
+        if self.storefiles:
+            self.savecalibration()
 
     def __DM_calibrate(self):
         self.__N_calibrations += 1
@@ -626,6 +658,7 @@ class EyeTracker:
 
     def __EL_savecalibration(self):
         print('saving calibrations not implemented for the EyeLink')
+        # not sure if it's worth pulling out the calibration info...
 
     def __LT_savecalibration(self):
 
@@ -668,13 +701,22 @@ class EyeTracker:
 
 
     def __EL_openfile(self, filename=None):
-        print('not implemented: openfile EyeLink')
+        # print('placeholder function: openfile EyeLink')
+        return(None) # done at the level of the whole session
 
-        if self.__fileOpen:
-            self.closefile()
-            print('note: closed open file before opening a new file')
+        # if self.__fileOpen:
+        #     self.closefile()
+        #     print('note: closed open file before opening a new file')
 
-        filename = saneFilename(filename, ext='.edf')
+        # filename = saneFilename(filename, ext='.edf')
+
+        # # # # # # # # #
+        # now what?
+
+        # https://psychopy.org/api/iohub/device/eyetracker_interface/SR_Research_Implementation_Notes.html
+        # it seems to be this option in the config dictionary:
+        # default_native_data_file_name: et_data
+
 
 
     def __LT_openfile(self, filename=None):
@@ -767,20 +809,22 @@ class EyeTracker:
 
     def __EL_closefile(self):
         # send command to EyeLink to close the EDF with raw data
-        if self.__fileOpen:
-            if len(self.__EL_currentfile) == 0:
-                print('no file to close')
-            else:
-                # these two lines from Clement:
-                self.tracker.setRecordingState(False)
-                self.io.clearEvents()
+        # if self.__fileOpen:
+        #     if len(self.__EL_currentfile) == 0:
+        #         print('no file to close')
+        #     else:
+        #         # these two lines from Clement:
+        #         self.tracker.setRecordingState(False)
+        #         self.io.clearEvents()
 
-                # extra bookkeeping:
-                self.__EL_downloadFiles.append(self.__EL_currentfile)
-                self.__EL_currentfile = ''
-                self.__fileOpen = False
-        else:
-            print('no file to close')
+        #         # extra bookkeeping:
+        #         self.__EL_downloadFiles.append(self.__EL_currentfile)
+        #         self.__EL_currentfile = ''
+        #         self.__fileOpen = False
+        # else:
+        #     print('no file to close')
+
+        return(None)
             
 
     def __LT_closefile(self):
@@ -788,7 +832,7 @@ class EyeTracker:
             self.LiveTrack.CloseDataFile()
             self.__fileOpen = False
         else:
-            print('no file to close')
+            print('no file to close, moving on')
 
 
 
@@ -1002,9 +1046,11 @@ class EyeTracker:
         raise Warning("default function: tracker not set")
 
     def __EL_shutdown(self):
+        self.tracker.setConnectionState(False) # does this download the EDF file as well? should be set up somewhere...
         self.stopcollecting()
         self.closefile()
         self.io.quit()
+        # is this sufficient to store what we need?
 
     def __LT_shutdown(self):
         self.stopcollecting()
