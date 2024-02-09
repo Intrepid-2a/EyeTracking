@@ -765,22 +765,16 @@ class EyeTracker:
         raise Warning("default function: tracker not set")
 
     def __EL_closefile(self):
-        print('not implemented yet')
         # send command to EyeLink to close the EDF with raw data
-
-        self.__EL_currentfile = ''
-        self.__EL_downloadFiles = []
-
-
-
         if self.__fileOpen:
             if len(self.__EL_currentfile) == 0:
                 print('no file to close')
             else:
+                # these two lines from Clement:
+                self.tracker.setRecordingState(False)
+                self.io.clearEvents()
 
-                # # # # # # # # # # # # #
-                # do the actual closing here
-
+                # extra bookkeeping:
                 self.__EL_downloadFiles.append(self.__EL_currentfile)
                 self.__EL_currentfile = ''
                 self.__fileOpen = False
@@ -977,24 +971,29 @@ class EyeTracker:
         raise Warning("default function: tracker not set")
 
     def __EL_comment(self, comment):
-        print('not implemented: storing a comment in the raw eyelink data file')
-        print('the EyeLink API calls this a message, as opposed to a command')
-        # check if there is a current file where data is actively being recorded
-        # format as a message that the EyeLink can handle?
-        # - replace spaces with underscores?
-        # - maximum length?
+        # based on this thread:
+        # https://discourse.psychopy.org/t/eyelink-1000-output-file-doesnt-have-trial-or-event-information/25699
+        if self.__fileOpen:
+            self.tracker.sendMessage(comment)
+        # do we need to wait for some time?
 
     def __LT_comment(self, comment):
 
         if self.__fileOpen:
             self.LiveTrack.SetDataComment(comment)
             time.sleep(1/self.__LiveTrackConfig['sampleRate'])
+        # the experiment sleeps for 1 eye-tracker sample
+        # this way the comment gets stored in the current sample
+        # and doesn't get overwritten by the next comment
+        # and we might skip 1 sample, but that will be less than 1 frame
 
 
     def __DM_comment(self, comment):
         print('DM comment: %s'%(comment))
         # also: probably won't be implemented, because there is no such file?
-        # this would require starting a different thread or so, that takes all the mouse coordinates and... no doesn't sound like a plan to me
+        # this would require starting a different thread or so
+        # that takes all the mouse coordinates, at some sampling rate, separately from the experiment, and... 
+        # no... doesn't sound like a plan to me
 
 
     # endregion
@@ -1010,7 +1009,9 @@ class EyeTracker:
         raise Warning("default function: tracker not set")
 
     def __EL_shutdown(self):
-        print('not implemented yet: EyeLink shutdown')
+        self.stopcollecting()
+        self.closefile()
+        self.io.quit()
 
     def __LT_shutdown(self):
         self.stopcollecting()
@@ -1042,12 +1043,5 @@ class EyeTracker:
                                         innerLineWidth=0, 
                                         borderColor=None, 
                                         innerBorderColor=None)
-
-
-
-
-
-
-
 
 
