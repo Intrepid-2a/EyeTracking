@@ -104,8 +104,10 @@ class EyeTracker:
                         self.trackEyes = trackEyes
                     else:
                         raise Warning("one or both eyes must be tracked")
-                else:        self.setFilefolde(filefolder)
-        self.setSamplemode(samplemode)
+                else:
+                    raise Warning("trackEyes must only contain booleans")
+            else:
+                raise Warning("trackEyes must have length 2")
         else:
             raise Warning("trackEyes must be a list")
 
@@ -962,9 +964,9 @@ class EyeTracker:
 
     def waitForFixation(self, minFixDur=None, fixTimeout=None):
 
-        if minFixDur = None:
+        if minFixDur == None:
             minFixDur = self.minFixDur
-        if fixTimeout = None:
+        if fixTimeout == None:
             fixTimeout = self.fixTimeout
 
         # most the initially set values should be used, but we do 1 sanity check here:
