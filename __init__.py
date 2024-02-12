@@ -1,5 +1,5 @@
 #!pyenv local 3.8.10
 
-from EyeTracker import *
+from EyeTracking import *
 
 __all__ = ['EyeTracker']
