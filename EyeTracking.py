@@ -1084,6 +1084,7 @@ class EyeTracker:
                                         lineWidth=0, 
                                         innerLineWidth=0, 
                                         borderColor=None, 
-                                        innerBorderColor=None)
+                                        innerBorderColor=None,
+                                        units='deg')
 
 
