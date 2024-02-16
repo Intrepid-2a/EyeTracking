@@ -180,20 +180,20 @@ class EyeTracker:
 
     def setCalibrationpoints(self, calibrationpoints):
         if isinstance(calibrationpoints, numbers.Number):
-            if calibrationpoins in [5,9]:
+            if calibrationpoints in [5,9]:
                 # allowed number of points?
                 self.calibrationpoints = calibrationpoints
                 if calibrationpoints == 5:
-                    self.__calibrationTargets = np.array([[0,0],                                  [6,6],[6,-6],[-6,6],[-6,-6]])
+                    self.calibrationTargets = np.array([[0,0],                                  [6,6],[6,-6],[-6,6],[-6,-6]])
                 if calibrationpoints == 9:
-                    self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
+                    self.calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
             else:
                 raise Warning("calibration points muct be 9 (default) or 5")
         else:
             raise Warning("calibration points must be a number")
 
 
-        eyetracker_config['calibration'] = dict(type='THIRTEEN_POINTS')
+        # eyetracker_config['calibration'] = dict(type='THIRTEEN_POINTS')
 
 
     def setupEyeLink(self):
@@ -406,7 +406,7 @@ class EyeTracker:
         # do calibration... this needs to be rewritten...
         # LTcal(cfg=cfg, trackLeftEye=trackLeftEye, trackRightEye=trackRightEye)
 
-        [ width, height, sampleRate, offsetX, offsetY ] = LiveTrack.GetCaptureConfig()
+        [ width, height, sampleRate, offsetX, offsetY ] = self.LiveTrack.GetCaptureConfig()
         self.__LiveTrackConfig = { 'width'      : width,
                                    'height'     : height,
                                    'sampleRate' : sampleRate,
@@ -1076,6 +1076,7 @@ class EyeTracker:
         fixDotOutDeg = 1.0
         
         self.target = visual.TargetStim(self.psychopyWindow, 
+                                        name='fixTarget',
                                         radius=fixDotOutDeg/2, 
                                         innerRadius=fixDotInDeg/2, 
                                         fillColor=[-1,-1,-1], 
