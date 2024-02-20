@@ -6,6 +6,9 @@ import time
 import math
 import os
 import json
+import copy
+import random
+
 
 # to test if input objects are valid psychopy classes:
 import psychopy
@@ -57,7 +60,7 @@ class EyeTracker:
 
         # maybe these should be a property that has a function to set it?
         # it's only used for the LiveTrack, so probably not...
-        self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
+        # self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
 
         
         self.__fileOpen = False
@@ -152,9 +155,10 @@ class EyeTracker:
 
 
     def setFilefolder(self, filefolder):
+        self.storefiles = False
         if isinstance(filefolder, str):
             if len(filefolder) == 0:
-                self.storefiles = False
+                # self.storefiles = False
                 # check if it is an existing path
                 if os.path.isdir(filefolder):
                     self.storefiles = True
@@ -164,7 +168,7 @@ class EyeTracker:
             else:
                 print('NOTE: not storing any files since filefolder is an empty string')
         else:
-            raise Warning("filefolder must be a string")
+            print('NOTE: not storing any files since filefolder is not a string')
         
 
     def setSamplemode(self, samplemode):
@@ -184,9 +188,10 @@ class EyeTracker:
                 # allowed number of points?
                 self.calibrationpoints = calibrationpoints
                 if calibrationpoints == 5:
-                    self.calibrationTargets = np.array([[0,0],                                  [6,6],[6,-6],[-6,6],[-6,-6]])
+                    self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3]                                 ])
                 if calibrationpoints == 9:
-                    self.calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
+                    self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
+                # print(self.__calibrationTargets)
             else:
                 raise Warning("calibration points muct be 9 (default) or 5")
         else:
@@ -441,8 +446,26 @@ class EyeTracker:
         # self.savecalibration() # not sure if this function will just do nothing or if it will not exist for the EyeLink case
 
     def __LT_calibrate(self):
-        print('calibrate livetrack')
-        np.random.shuffle(self.calibrationTargets)
+        # print('calibrate livetrack')
+
+        calTargets = copy.deepcopy(self.__calibrationTargets)
+
+        print(self.calibrationpoints)
+
+        # midTarget = calTargets[0]
+        # extTargets = calTargets[1:]
+
+        # np.random.shuffle(extTargets)
+
+        # calTargets = [midTarget].append(extTargets).append(midTarget)
+
+        # ntargets = len(calTargets)
+
+        mididx = list(range(1,len(calTargets)))
+        random.shuffle(mididx)
+        allidx = [0] + mididx + [0]
+        ntargets = len(allidx)
+
 
         # configure calibration:
         setupDelay = 1000.0 # time before collecting any samples in ms
@@ -450,8 +473,11 @@ class EyeTracker:
         fixTimeout = 5  # timeout duration in seconds (point is skipped!)
         fixThreshold = 5 # pixel window for all samples within a 'fixation'
 
-        ntargets = np.shape(self.__calibrationTargets)[0]
-        tgtLocs = self.__calibrationTargets.astype(float) # make sure locations are floats
+        # ntargets = np.shape(self.__calibrationTargets)[0]
+        # tgtLocs = self.__calibrationTargets.astype(float) 
+        tgtLocs = copy.deepcopy(self.__calibrationTargets)
+        tgtLocs = tgtLocs[allidx,:]
+        tgtLocs = tgtLocs.astype(float) # make sure locations are floats
 
         # show calibration on separate video window (not necessary):
         # if self.useVideo:
@@ -494,7 +520,9 @@ class EyeTracker:
             # self.cal_dot_i.pos = self.calibrationTargets[target_idx,:]
             # self.cal_dot_i.draw()
 
-            self.target.pos = self.__calibrationTargets[target_idx,:]
+            targetpos = tgtLocs[target_idx]
+
+            self.target.pos = targetpos
             self.target.draw()
 
             self.psychopyWindow.flip()
@@ -534,7 +562,7 @@ class EyeTracker:
                             VectYL[target_idx] = np.median(VectY)
                             GlintXL[target_idx] = np.median(GlintX)
                             GlintYL[target_idx] = np.median(GlintY)
-                            print('Fixation #',str(target_idx+1),str(self.calibrationTargets[target_idx,:]),': Found valid fixation for left eye')
+                            print('Fixation #',str(target_idx+1),str(targetpos),': Found valid fixation for left eye')
                             gotFixLeft = 1 # good fixation aquired
                 
                 if self.trackEyes[1]:
@@ -558,15 +586,15 @@ class EyeTracker:
                             VectYR[target_idx] = np.median(VectYRight)
                             GlintXR[target_idx] = np.median(GlintXRight)
                             GlintYR[target_idx] = np.median(GlintYRight)
-                            print('Fixation #',str(target_idx+1),str(self.__calibrationTargets[target_idx,:]),': Found valid fixation for right eye')
+                            print('Fixation #',str(target_idx+1),str(targetpos),': Found valid fixation for right eye')
                             gotFixRight = 1 # good fixation aquired
                 
 
                 if (time.time()-t0)>fixTimeout:
                     if not gotFixLeft and self.trackEyes[0]>0:
-                        print('Fixation #',str(target_idx+1),str(self.__calibrationTargets[target_idx,:]),': Did not get fixation for left eye (timeout)')
+                        print('Fixation #',str(target_idx+1),str(targetpos),': Did not get fixation for left eye (timeout)')
                     if not gotFixRight and self.trackEyes[1]>0:
-                        print('Fixation #',str(target_idx+1),str(self.__calibrationTargets[target_idx,:]),': Did not get fixation for right eye (timeout)')
+                        print('Fixation #',str(target_idx+1),str(targetpos),': Did not get fixation for right eye (timeout)')
                     break # fixation timed out
 
                 
@@ -836,7 +864,12 @@ class EyeTracker:
         else:
             print('no file to close, moving on')
 
-
+    def __DM_closefile(self):
+        if self.__fileOpen:
+            print('open file for dummy mouse? this should not happen...')
+            self.__fileOpen = False
+        else:
+            print('no file to close, moving on')
 
     # endregion
 
