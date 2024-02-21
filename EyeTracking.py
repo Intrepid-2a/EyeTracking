@@ -46,15 +46,15 @@ class EyeTracker:
         # they can also be used later on to change how the object works
         # and are supposed to be device-agnostic
 
+        self.setPsychopyWindow(psychopyWindow)
+        self.setCalibrationpoints(calibrationpoints)
         self.setEyetracker(tracker)
         self.trackEyes(trackEyes)
         self.setFixationWindow(fixationWindow)
         self.setMinFixDur(minFixDur)
         self.setFixTimeout(fixTimeout)
-        self.setPsychopyWindow(psychopyWindow)
         self.setFilefolder(filefolder)
         self.setSamplemode(samplemode)
-        self.setCalibrationpoints(calibrationpoints)
 
         # things below this comment are still up for change... depends a bit on how the EyeLink does things
 
@@ -222,7 +222,7 @@ class EyeTracker:
 
         # constant to convert pixels to degrees for the case of the EyeLink only
         self.__EL_p2df = monitorunittools.pix2deg(1, self.psychopyWindow.monitor)
-        self.__EL_offset = np.array([(x-1)/2 for x in mywin.monitor.getSizePix()])
+        self.__EL_offset = np.array([(x-1)/2 for x in self.psychopyWindow.monitor.getSizePix()])
 
 
         # remap functions:
@@ -976,7 +976,7 @@ class EyeTracker:
     def gazeInFixationWindow(self):
 
         sample = self.lastsample()
-        check_samples = self.getSamplesToCheck
+        check_samples = self.getSamplesToCheck()
         infix = True
 
         for key in sample.keys():
