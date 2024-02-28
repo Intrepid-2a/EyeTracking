@@ -521,7 +521,7 @@ class EyeTracker:
 
         visual.TextStim(self.psychopyWindow,'calibration', height = 1,wrapWidth=30, color = 'black').draw()
         self.psychopyWindow.flip()
-        # time.sleep(0.5) # is this necessary?
+        time.sleep(0.25) # is this necessary?
 
         for target_idx in range(ntargets):
             # plot a circle at the fixation position.
