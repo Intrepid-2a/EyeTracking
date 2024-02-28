@@ -164,7 +164,7 @@ class EyeTracker:
     def setFilefolder(self, filefolder):
         self.storefiles = False
         if isinstance(filefolder, str):
-            if len(filefolder) == 0:
+            if len(filefolder) > 0:
                 # self.storefiles = False
                 # check if it is an existing path
                 if os.path.isdir(filefolder):
@@ -1208,7 +1208,7 @@ def localizeSetup( trackEyes, filefolder, location=None, glasses='RG' ):
         tracker = 'mouse'
         trackEyes = [True, False]
 
-
+    print(filefolder)
     ET = EyeTracker(tracker           = tracker,
                     trackEyes         = trackEyes,
                     fixationWindow    = 2.0,
