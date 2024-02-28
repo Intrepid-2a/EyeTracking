@@ -765,7 +765,7 @@ class EyeTracker:
             self.closefile()
             print('note: closed open file before opening a new file')
 
-        filename = saneFilename(filename, ext='.csv')
+        filename = self.saneFilename(filename, ext='.csv')
 
         self.LiveTrack.SetDataFilename(os.path.join(self.filefolder,filename))
 
