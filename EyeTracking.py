@@ -235,6 +235,7 @@ class EyeTracker:
         # remap functions:
         self.initialize = self.__EL_initialize
         self.calibrate  = self.__EL_calibrate
+        self.savecalibration = self.__EL_savecalibration
 
         self.lastsample = self.__EL_lastsample
 
@@ -256,6 +257,7 @@ class EyeTracker:
         # remap functions:
         self.initialize = self.__LT_initialize
         self.calibrate  = self.__LT_calibrate
+        self.savecalibration = self.__LT_savecalibration
 
         self.lastsample = self.__LT_lastsample
 
@@ -278,6 +280,7 @@ class EyeTracker:
         # remap functions:
         self.initialize = self.__DM_initialize
         self.calibrate  = self.__DM_calibrate
+        self.savecalibration = self.__DM_savecalibration
 
         self.lastsample = self.__DM_lastsample
 
