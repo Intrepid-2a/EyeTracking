@@ -347,7 +347,7 @@ def CloseDataFile():
     return result
 
 def SetDataComment(comment):
-    comment8 = comment8.encode('utf-8')
+    comment8 = comment.encode('utf-8')
     namebuf = ctypes.create_string_buffer(comment8, 512)
     result = _dll.crsLiveTrackSetDataComment(ctypes.byref(namebuf))
     if result!=0:
