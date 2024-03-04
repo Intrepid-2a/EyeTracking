@@ -1200,7 +1200,8 @@ def localizeSetup( trackEyes, filefolder, location=None, glasses='RG' ):
     mymonitor = monitors.Monitor(name='temp',
                                  distance=distance,
                                  width=size[0])
-    mymonitor.setGammaGrid(gammaGrid)
+    if location == 'toronto':
+        mymonitor.setGammaGrid(gammaGrid)
     mymonitor.setSizePix(resolution)
 
     #win = visual.Window([1000, 500], allowGUI=True, monitor='ccni', units='deg', fullscr=True, color = back_col, colorSpace = 'rgb')
