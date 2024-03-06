@@ -211,8 +211,9 @@ class EyeTracker:
     def setupEyeLink(self):
         
         # python library to interface with EyeLink:
-        import pylink
-        self.pylink = pylink
+        # note, we should either use pylink or use the psychopy IOhub system: apparently, they can't be mixed
+        # import pylink
+        # self.pylink = pylink
 
         from EyeLinkCoreGraphicsPsychoPy import EyeLinkCoreGraphicsPsychoPy
         self.EyeLinkCoreGraphicsPsychoPy = EyeLinkCoreGraphicsPsychoPy
@@ -231,6 +232,72 @@ class EyeTracker:
         self.__EL_p2df = monitorunittools.pix2deg(1, self.psychopyWindow.monitor)
         self.__EL_offset = np.array([(x-1)/2 for x in self.psychopyWindow.monitor.getSizePix()])
 
+
+        # EyeLink / IOhub needs a window object with the unit in pixels
+        # but everything else needs degrees (including the LiveTrack calibration)
+        # so for this exception, we create a new window, based on the input window:
+
+
+            #     if location == 'glasgow':
+            #     # not a calibrated monitor?
+            #     gammaGrid = np.array([ [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
+            #                         [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
+            #                         [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
+            #                         [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ]  ], dtype=float)
+
+            #     resolution = [1920, 1080] # in pixels
+            #     size       = [60, 33.75] # in cm
+            #     distance   = 57 # in cm
+            #     screen     = 0 # index on the system: 0 = first monitor, 1 = second monitor, and so on
+
+            #     tracker = 'eyelink'
+
+
+            # if location == 'toronto':
+            #     # color calibrated monitor:
+            #     gammaGrid = np.array([ [  0., 135.44739,  2.4203537, np.nan, np.nan, np.nan  ],
+            #                         [  0.,  27.722954, 2.4203537, np.nan, np.nan, np.nan  ],
+            #                         [  0.,  97.999275, 2.4203537, np.nan, np.nan, np.nan  ],
+            #                         [  0.,   9.235623, 2.4203537, np.nan, np.nan, np.nan  ]  ], dtype=float)
+
+            #     resolution = [1920, 1080] # in pixels
+            #     size       = [59.8, 33.6] # in cm
+            #     distance   = 50 # in cm
+            #     screen     = 0  # index on the system: 0 = first monitor, 1 = second monitor, and so on
+
+            #     tracker = 'livetrack'
+
+            # mymonitor = monitors.Monitor(name='temp',
+            #                             distance=distance,
+            #                             width=size[0])
+            # if location == 'toronto':
+            #     mymonitor.setGammaGrid(gammaGrid)
+            # mymonitor.setSizePix(resolution)
+
+            # #win = visual.Window([1000, 500], allowGUI=True, monitor='ccni', units='deg', fullscr=True, color = back_col, colorSpace = 'rgb')
+            # win = visual.Window(resolution, monitor=mymonitor, allowGUI=True, units='deg', fullscr=True, color=back_col, colorSpace = 'rgb', screen=screen)
+
+        resolution = self.psychopyWindow.monitor.getSizePix()
+        width      = self.psychopyWindow.monitor.getWidth()
+        distance   = self.psychopyWindow.monitor.getDistance()
+        gammaGrid  = self.psychopyWindow.monitor.getGammaGrid()
+
+        mymonitor = monitors.Monitor(name='EL_temp',
+                                     distance=distance,
+                                     width=width,
+                                     gammaGrid=gammaGrid)
+
+        screen = self.psychopyWindow.screen
+        color  = self.psychopyWindow.color
+
+        self.__EL_window = win = visual.Window(resolution, 
+                                               monitor=mymonitor, 
+                                               allowGUI=True, 
+                                               units='pix', 
+                                               fullscr=True,
+                                               color=color,
+                                               colorSpace = 'rgb', 
+                                               screen=screen)
 
         # remap functions:
         self.initialize = self.__EL_initialize
@@ -404,9 +471,13 @@ class EyeTracker:
         self.devices_config = devices_config
 
         # launch a tracker device thing in the iohub:
-        self.io = self.launchHubServer(window = self.psychopyWindow, **devices_config)
+        # self.io = self.launchHubServer(window = self.psychopyWindow, **devices_config)
+        self.io = self.launchHubServer(window = self.__EL_window, **devices_config)
+
         self.tracker = self.io.getDevice('tracker')
 
+        # this part might not be cool? otoh, we don't need that window any more...
+        self.__EL_window.close()
 
 
     def __LT_initialize(self):
