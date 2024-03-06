@@ -371,7 +371,8 @@ class EyeTracker:
         # we'll store and make available the same eyes (this could be set up differently)
         track_eyes = None
         if all(self.trackEyes):
-            track_eyes = 'LEFT,RIGHT,'
+            # track_eyes = 'LEFT,RIGHT' # this line had a typoe, but also, it's not what Clement sent me earlier:
+            track_eyes = 'BOTH'
         else:
             # only one eye is tracked?
             if self.trackEyes[0]:
@@ -387,6 +388,7 @@ class EyeTracker:
         devices_config = dict()
         eyetracker_config = dict(name='tracker')
         eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
+        # eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='BOTH') # this line from Clement, but let's try the next one for now:
         eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
         eyetracker_config['calibration'] = dict(screen_background_color=(0,0,0))
         if self.calibrationpoints == 5:
@@ -697,7 +699,7 @@ class EyeTracker:
         raise Warning("default function: tracker not set")
 
     def __EL_savecalibration(self):
-        print('saving calibrations not implemented for the EyeLink')
+        print('not saving calibrations for the EyeLink')
         # not sure if it's worth pulling out the calibration info...
 
     def __LT_savecalibration(self):
@@ -718,7 +720,7 @@ class EyeTracker:
         out_file.close()
 
     def __DM_savecalibration(self):
-        print('not saving mouse calibration')
+        print('not saving 1:1 mouse calibration')
 
     
     # endregion
@@ -760,7 +762,9 @@ class EyeTracker:
 
 
     def __LT_openfile(self, filename=None):
+        
 
+        # maybe this should also be done at the level of the whole session?
         if self.__fileOpen:
             self.closefile()
             print('note: closed open file before opening a new file')
