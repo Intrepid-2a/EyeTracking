@@ -1266,7 +1266,7 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG' 
         resolution = [1920, 1080] # in pixels
         size       = [60, 33.75] # in cm
         distance   = 57 # in cm
-        screen     = 0 # index on the system: 0 = first monitor, 1 = second monitor, and so on
+        screen     = 1 # index on the system: 0 = first monitor, 1 = second monitor, and so on
 
         tracker = 'eyelink'
 
