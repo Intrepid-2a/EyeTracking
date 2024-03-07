@@ -44,8 +44,9 @@ class EyeTracker:
                  fixTimeout=None,
                  psychopyWindow=None, 
                  filefolder=None, 
+                 filename=None,
                  samplemode=None,
-                 calibrationpoints=9):
+                 calibrationpoints=5):
 
 
         # the functions below check the user input,
@@ -60,7 +61,7 @@ class EyeTracker:
         self.setFixationWindow(fixationWindow)
         self.setMinFixDur(minFixDur)
         self.setFixTimeout(fixTimeout)
-        self.setFilefolder(filefolder)
+        self.setFilePath(filefolder, filename)
         self.setSamplemode(samplemode)
 
         # things below this comment are still up for change... depends a bit on how the EyeLink does things
@@ -161,15 +162,22 @@ class EyeTracker:
             raise Warning("psychopyWindow must by a psychopy Window")
 
 
-    def setFilefolder(self, filefolder):
+    def setFilePath(self, filefolder, filename):
         self.storefiles = False
         if isinstance(filefolder, str):
             if len(filefolder) > 0:
                 # self.storefiles = False
                 # check if it is an existing path
                 if os.path.isdir(filefolder):
-                    self.storefiles = True
-                    self.filefolder = filefolder
+                    if isinstance(filename, str):
+                        if len(filename) > 0:
+                            self.storefiles  = True
+                            self.filefolder  = filefolder
+                            self.filename    = filename
+                        else:
+                            print('NOTE: not storing any data since filename is an empty string')
+                    else:
+                        print('NOTE: not storing any data since filename is not a string')
                 else:
                     raise Warning("filefolder is not a valid or existing path: %s"%(filefolder))
             else:
@@ -476,7 +484,7 @@ class EyeTracker:
 
         self.tracker = self.io.getDevice('tracker')
 
-        # this part might not be cool? otoh, we don't need that window any more...
+        # this part might not be cool? otoh, we don't need that window any more... and it should not block the main window
         self.__EL_window.close()
 
 
@@ -834,8 +842,9 @@ class EyeTracker:
 
     def __LT_openfile(self, filename=None):
         
-
         # maybe this should also be done at the level of the whole session?
+        # yes!
+
         if self.__fileOpen:
             self.closefile()
             print('note: closed open file before opening a new file')
@@ -1207,7 +1216,9 @@ class EyeTracker:
 
 
 
-def localizeSetup( trackEyes, filefolder, location=None, glasses='RG' ):
+def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG' ):
+    
+    # sanity checks on trackEyes, filefolder and filename are done by the eyetracker object
 
     # sanity check on location argument
     if location == None:
@@ -1234,6 +1245,8 @@ def localizeSetup( trackEyes, filefolder, location=None, glasses='RG' ):
                     red_col    = [ 0.5,  -1.0,  -1.0 ]
                     blue_col   = [-1.0,   0.5,  -1.0 ]
             if glasses == 'RB':
+                # this should no longer be used:
+                print('are you sure about using RED/BLUE glasses?')
                 back_col   = [ 0.5, -1.0,  0.5]
                 red_col    = [ 0.5, -1.0, -1.0]
                 blue_col   = [-1.0, -1.0,  0.5] 
@@ -1295,6 +1308,7 @@ def localizeSetup( trackEyes, filefolder, location=None, glasses='RG' ):
                     fixTimeout        = 3.0,
                     psychopyWindow    = win,
                     filefolder        = filefolder,
+                    filename          = filename,
                     samplemode        = 'average',
                     calibrationpoints = 5 )
 
