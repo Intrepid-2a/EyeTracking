@@ -977,7 +977,7 @@ class EyeTracker:
         raise Warning("default function: tracker not set")
 
     def __EL_lastsample(self):
-        print('not implemented: getting last eyelink sample')
+        # print('not implemented: getting last eyelink sample')
         # probably needs to be converted to dva... using built-in psychopy functions?
         # do we need to account for the origin/offset?
         o = self.__EL_offset # subtract this from X,Y coordinates to get coordinates with (0,0) at the center of the screen
