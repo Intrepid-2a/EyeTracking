@@ -288,20 +288,22 @@ class EyeTracker:
         resolution = self.psychopyWindow.monitor.getSizePix()
         width      = self.psychopyWindow.monitor.getWidth()
         distance   = self.psychopyWindow.monitor.getDistance()
-        gammaGrid  = self.psychopyWindow.monitor.getGammaGrid()
+        # gammaGrid  = self.psychopyWindow.monitor.getGammaGrid()
 
         mymonitor = monitors.Monitor(name='EL_temp',
                                      distance=distance,
                                      width=width
                                      )
 
-        defaultGammaGrid = np.array([ [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
-                                      [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
-                                      [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
-                                      [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ]  ], dtype=np.float32)
+        # leave out the whole gamma grid for now, it's not relevant at this point, maybe in the future?
 
-        if not np.array_equal(mymonitor.getGammaGrid()[:,:3], defaultGammaGrid[:,:3]):
-            mymonitor.setGammaGrid(gammaGrid)
+        # defaultGammaGrid = np.array([ [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
+        #                               [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
+        #                               [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
+        #                               [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ]  ], dtype=np.float32)
+
+        # if not np.array_equal(mymonitor.getGammaGrid()[:,:3], defaultGammaGrid[:,:3]):
+        #     mymonitor.setGammaGrid(gammaGrid)
 
         screen = self.psychopyWindow.screen
         color  = self.psychopyWindow.color
