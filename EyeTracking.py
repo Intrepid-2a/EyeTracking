@@ -292,8 +292,16 @@ class EyeTracker:
 
         mymonitor = monitors.Monitor(name='EL_temp',
                                      distance=distance,
-                                     width=width,
-                                     gammaGrid=gammaGrid)
+                                     width=width
+                                     )
+
+        defaultGammaGrid = np.array([ [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
+                                      [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
+                                      [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
+                                      [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ]  ], dtype=np.float32)
+
+        if not np.array_equal(mymonitor.getGammaGrid()[:,:3], defaultGammaGrid[:,:3]):
+            mymonitor.setGammaGrid(gammaGrid)
 
         screen = self.psychopyWindow.screen
         color  = self.psychopyWindow.color
@@ -1261,7 +1269,7 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG' 
         gammaGrid = np.array([ [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
                                [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
                                [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
-                               [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ]  ], dtype=float)
+                               [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ]  ], dtype=np.float32)
 
         resolution = [1920, 1080] # in pixels
         size       = [60, 33.75] # in cm
@@ -1276,7 +1284,7 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG' 
         gammaGrid = np.array([ [  0., 135.44739,  2.4203537, np.nan, np.nan, np.nan  ],
                                [  0.,  27.722954, 2.4203537, np.nan, np.nan, np.nan  ],
                                [  0.,  97.999275, 2.4203537, np.nan, np.nan, np.nan  ],
-                               [  0.,   9.235623, 2.4203537, np.nan, np.nan, np.nan  ]  ], dtype=float)
+                               [  0.,   9.235623, 2.4203537, np.nan, np.nan, np.nan  ]  ], dtype=np.float32)
 
         resolution = [1920, 1080] # in pixels
         size       = [59.8, 33.6] # in cm

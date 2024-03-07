@@ -7,6 +7,7 @@ gammaGrid = np.array([  [  0., 1., 1., np.nan, np.nan, np.nan  ],
                         [  0., 1., 1., np.nan, np.nan, np.nan  ],
                         [  0., 1., 1., np.nan, np.nan, np.nan  ]], dtype=float)
 
+
 resolution = [960, 540]
 # resolution = [1920, 1080]
 size = [29.8, 16.8]
