@@ -46,7 +46,8 @@ class EyeTracker:
                  filefolder=None, 
                  filename=None,
                  samplemode=None,
-                 calibrationpoints=5):
+                 calibrationpoints=5,
+                 colors=None):
 
 
         # the functions below check the user input,
@@ -63,6 +64,7 @@ class EyeTracker:
         self.setFixTimeout(fixTimeout)
         self.setFilePath(filefolder, filename)
         self.setSamplemode(samplemode)
+        self.setColors(colors)
 
         # things below this comment are still up for change... depends a bit on how the EyeLink does things
 
@@ -215,6 +217,13 @@ class EyeTracker:
 
 
         # eyetracker_config['calibration'] = dict(type='THIRTEEN_POINTS')
+
+    def setColors(self, colors):
+        if isinstance(colors, dict):
+            # no more checks for now, but should check that it has at least col_back: used for eyelink calibration...
+            self.colors = colors
+        else:
+            raise Warning("colors should be a dictionary")
 
 
     def setupEyeLink(self):
@@ -461,9 +470,9 @@ class EyeTracker:
         else:
             # only one eye is tracked?
             if self.trackEyes[0]:
-                track_eyes = 'LEFT,'  # or just 'LEFT' ?
+                track_eyes = 'LEFT'  # or just 'LEFT' ?
             if self.trackEyes[1]:
-                track_eyes = 'RIGHT,'  # or just 'RIGHT' ?
+                track_eyes = 'RIGHT'  # or just 'RIGHT' ?
         # if no eye is tracked, that is going to be really hard for calibration and getting any samples...
         if track_eyes == None:
             raise Warning("trackEyes needs to set at least one eye to be tracked")
@@ -475,7 +484,7 @@ class EyeTracker:
         eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
         # eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='BOTH') # this line from Clement, but let's try the next one for now:
         eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
-        eyetracker_config['calibration'] = dict(screen_background_color=(0,0,0))
+        eyetracker_config['calibration'] = dict(screen_background_color=colors['col_back'])
         if self.calibrationpoints == 5:
             eyetracker_config['calibration'] = dict(type='FIVE_POINTS')
         if self.calibrationpoints == 9:
@@ -1229,7 +1238,7 @@ class EyeTracker:
 
 
 
-def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG' ):
+def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG', colors=None ):
     
     # sanity checks on trackEyes, filefolder and filename are done by the eyetracker object
 
@@ -1244,25 +1253,27 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG' 
     else:
         raise Warning("set location to a string: Glasgow or Toronto")
 
+    if colors == None:
+        colors = {}
 
     # sanity check on glasses argument, and picking back-ground color
     if isinstance(glasses, str):
         if glasses in ['RG', 'RB']:
             if glasses == 'RG':
                 if location == 'glasgow':
-                    back_col   = [ 0.55,  0.45, -1.00] 
-                    red_col    = [ 0.55, -1.00, -1.00]
-                    blue_col   = [-1.00,  0.45, -1.00]
+                    colors['back_col']   = [ 0.55,  0.45, -1.00] 
+                    colors['red_col']    = [ 0.55, -1.00, -1.00]
+                    colors['blue_col']   = [-1.00,  0.45, -1.00]
                 if location == 'toronto':
-                    back_col   = [ 0.5,   0.5,  -1.0 ]
-                    red_col    = [ 0.5,  -1.0,  -1.0 ]
-                    blue_col   = [-1.0,   0.5,  -1.0 ]
+                    colors['back_col']   = [ 0.5,   0.5,  -1.0 ]
+                    colors['red_col']    = [ 0.5,  -1.0,  -1.0 ]
+                    colors['blue_col']   = [-1.0,   0.5,  -1.0 ]
             if glasses == 'RB':
                 # this should no longer be used:
                 print('are you sure about using RED/BLUE glasses?')
-                back_col   = [ 0.5, -1.0,  0.5]
-                red_col    = [ 0.5, -1.0, -1.0]
-                blue_col   = [-1.0, -1.0,  0.5] 
+                colors['back_col']   = [ 0.5, -1.0,  0.5]
+                colors['red_col']    = [ 0.5, -1.0, -1.0]
+                colors['blue_col']   = [-1.0, -1.0,  0.5] 
         else:
             raise Warning('glasses should be RG (default) or RB')
     else:
@@ -1305,8 +1316,10 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG' 
         mymonitor.setGammaGrid(gammaGrid)
     mymonitor.setSizePix(resolution)
 
+
+
     #win = visual.Window([1000, 500], allowGUI=True, monitor='ccni', units='deg', fullscr=True, color = back_col, colorSpace = 'rgb')
-    win = visual.Window(resolution, monitor=mymonitor, allowGUI=True, units='deg', fullscr=True, color=back_col, colorSpace = 'rgb', screen=screen)
+    win = visual.Window(resolution, monitor=mymonitor, allowGUI=True, units='deg', fullscr=True, color=colors['back_col'], colorSpace = 'rgb', screen=screen)
             # size = [34.5, 19.5]filefolder,
 
     if not any(trackEyes):
@@ -1323,11 +1336,13 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG' 
                     filefolder        = filefolder,
                     filename          = filename,
                     samplemode        = 'average',
-                    calibrationpoints = 5 )
+                    calibrationpoints = 5,
+                    colors            = colors )
 
-    colors = {'back_col' : back_col,
-              'red_col'  : red_col,
-              'blue_col' : blue_col }
+
+    # colors = {'back_col' : back_col,
+    #           'red_col'  : red_col,
+    #           'blue_col' : blue_col }
 
     fusion = {'hi': fusionStim(win = win,
                                pos = [0,7]),
