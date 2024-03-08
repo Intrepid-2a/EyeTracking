@@ -1323,6 +1323,15 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
     win = visual.Window(resolution, monitor=mymonitor, allowGUI=True, units='deg', fullscr=True, color=colors['back_col'], colorSpace = 'rgb', screen=screen)
             # size = [34.5, 19.5]filefolder,
 
+    fixation = visual.ShapeStim(win, 
+                                vertices = ((0, -1), (0, 1), (0,0), (-1, 0), (1, 0)), 
+                                lineWidth = 5, 
+                                units = 'deg', 
+                                size = (1, 1), 
+                                closeShape = False, 
+                                lineColor = 'white')
+
+
     if not any(trackEyes):
         tracker = 'mouse'
         trackEyes = [True, False]
@@ -1350,10 +1359,11 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
               'lo': fusionStim(win = win,
                                pos = [0,-7])}
 
-    return({'win'     : win,
-            'tracker' : ET,
-            'colors'  : colors,
-            'fusion'  : fusion})
+    return( {'win'      : win,
+             'tracker'  : ET,
+             'colors'   : colors,
+             'fusion'   : fusion,
+             'fixation' : fixation } )
 
 
 
