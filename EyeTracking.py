@@ -171,6 +171,7 @@ class EyeTracker:
                 if os.path.isdir(filefolder):
                     if isinstance(filename, str):
                         if len(filename) > 0:
+                            # CHECK IF FILE EXISTS?
                             self.storefiles  = True
                             self.filefolder  = filefolder
                             self.filename    = filename
@@ -288,7 +289,6 @@ class EyeTracker:
         resolution = self.psychopyWindow.monitor.getSizePix()
         width      = self.psychopyWindow.monitor.getWidth()
         distance   = self.psychopyWindow.monitor.getDistance()
-        # gammaGrid  = self.psychopyWindow.monitor.getGammaGrid()
 
         mymonitor = monitors.Monitor(name='EL_temp',
                                      distance=distance,
@@ -297,11 +297,11 @@ class EyeTracker:
 
         # leave out the whole gamma grid for now, it's not relevant at this point, maybe in the future?
 
+        # gammaGrid  = self.psychopyWindow.monitor.getGammaGrid()
         # defaultGammaGrid = np.array([ [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
         #                               [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
         #                               [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ],
         #                               [  0., 1.0, 1.0, np.nan, np.nan, np.nan  ]  ], dtype=np.float32)
-
         # if not np.array_equal(mymonitor.getGammaGrid()[:,:3], defaultGammaGrid[:,:3]):
         #     mymonitor.setGammaGrid(gammaGrid)
 
@@ -309,13 +309,13 @@ class EyeTracker:
         color  = self.psychopyWindow.color
 
         self.__EL_window = win = visual.Window(resolution, 
-                                               monitor=mymonitor, 
-                                               allowGUI=True, 
-                                               units='pix', 
-                                               fullscr=True,
-                                               color=color,
+                                               monitor    = mymonitor, 
+                                               allowGUI   = True, 
+                                               units      = 'pix', 
+                                               fullscr    = True,
+                                               color      = color,
                                                colorSpace = 'rgb', 
-                                               screen=screen)
+                                               screen     = screen)
 
         # remap functions:
         self.initialize = self.__EL_initialize
@@ -481,8 +481,8 @@ class EyeTracker:
         if self.calibrationpoints == 9:
             eyetracker_config['calibration'] = dict(type='NINE_POINTS')
         if self.storefiles:
-            eyetracker_config['default_native_data_file_name'] = 'ELgaze' # correct extention is added by IOhub
-            eyetracker_config['local_edf_dir'] = self.filefolder          # otherwise this ends up in the main folder where the experiment itself lives
+            eyetracker_config['default_native_data_file_name'] = self.filename  # correct extention is added by IOhub
+            eyetracker_config['local_edf_dir'] = self.filefolder                # otherwise this ends up in the main folder where the experiment itself lives
         devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
 
         # not sure this needs to be stored, but let's just have the info available in the future:
@@ -850,7 +850,7 @@ class EyeTracker:
 
 
 
-    def __LT_openfile(self, filename=None):
+    def __LT_openfile(self):
         
         # maybe this should also be done at the level of the whole session?
         # yes!
@@ -859,9 +859,11 @@ class EyeTracker:
             self.closefile()
             print('note: closed open file before opening a new file')
 
-        filename = self.saneFilename(filename, ext='.csv')
+        # filename = self.saneFilename(self.filename, ext='.csv')
 
-        self.LiveTrack.SetDataFilename(os.path.join(self.filefolder,filename))
+
+        print(os.path.join(self.filefolder,self.filename)+'.csv')
+        self.LiveTrack.SetDataFilename(os.path.join(self.filefolder,self.filename)+'.csv')
 
         self.__fileOpen = True
         self.__N_rawdatafiles += 1
@@ -1152,15 +1154,16 @@ class EyeTracker:
         if self.__fileOpen:
             self.tracker.sendMessage(comment)
         # do we need to wait for some time?
+        # does this prepend MSG before the message?
 
     def __LT_comment(self, comment):
 
         if self.__fileOpen:
             self.LiveTrack.SetDataComment(comment)
-            time.sleep(1/self.__LiveTrackConfig['sampleRate'])
-        # the experiment sleeps for 1 eye-tracker sample
-        # this way the comment gets stored in the current sample
-        # and doesn't get overwritten by the next comment
+            time.sleep(1.5/self.__LiveTrackConfig['sampleRate'])
+        # the experiment sleeps for 1.5 eye-tracker samples
+        # this ensures actually storing the comment
+        # and doesn't get overwritten by the next comment... at the same sample (shouldn't send comments that quickly?)
         # and we might skip 1 sample, but that will be less than 1 frame
 
 
