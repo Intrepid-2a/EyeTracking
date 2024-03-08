@@ -1011,7 +1011,8 @@ class EyeTracker:
         gpos = self.tracker.getLastGazePosition()
         # gpos is either None (no valid tracking) or a tuple or list of 2 numbers: X/Y coordinates
         if isinstance(gpos, (tuple, list)):
-            data = (np.array(gpos) - o) * p
+            # data = (np.array(gpos) - o) * p # is the origin already the middle of the screen? would be a psychopy thing to do
+            data = (np.array(gpos)) * p
         else:
             data = np.array([np.NaN, np.NaN])
 
