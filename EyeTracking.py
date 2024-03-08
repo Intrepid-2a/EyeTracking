@@ -1331,6 +1331,9 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
                                 closeShape = False, 
                                 lineColor = 'white')
 
+    if 'both' in colors.keys():
+        fixation.lineColor = colors['both']
+
 
     if not any(trackEyes):
         tracker = 'mouse'
@@ -1354,10 +1357,18 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
     #           'red_col'  : red_col,
     #           'blue_col' : blue_col }
 
-    fusion = {'hi': fusionStim(win = win,
-                               pos = [0,7]),
-              'lo': fusionStim(win = win,
-                               pos = [0,-7])}
+    fcols = [[-1,-1,-1],[1,1,1]]
+    if 'both' in colors.keys():
+        fcols[0] = colors['both']
+    if 'back_col' in colors.keys():
+        fcols[1] = colors['back_col']
+
+    fusion = {'hi': fusionStim(win    = win,
+                               pos    = [0,7],
+                               colors = fcols),
+              'lo': fusionStim(win    = win,
+                               pos    = [0,-7],
+                               colors = fcols)}
 
     return( {'win'      : win,
              'tracker'  : ET,
