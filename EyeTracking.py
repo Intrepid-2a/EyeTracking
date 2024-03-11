@@ -1093,15 +1093,19 @@ class EyeTracker:
 
         sample = self.lastsample()
         check_samples = self.getSamplesToCheck()
-        infix = True
+        
+        for cs in check_samples:
+            if cs in sample.keys():
+                if any(np.isnan(sample[cs])):
+                    return(False) # return False if there is a nan value
+                d = np.sqrt(np.sum(np.array(sample[cs])**2))
+                if d > 2:
+                    return(False) # return false if the distance from fixation is larger than 2
+            else:
+                return(False) # return false if any of the samples that need to be checked are not in the data
 
-        for key in sample.keys():
-            if key in check_samples:
-                d = np.sqrt(np.sum(np.array(sample[key])**2))
-                if d > self.fixationWindow:
-                    infix = False
+        return(True) # should only get here if all samples exist, are not nans, and are within the fixation window
 
-        return infix
 
 
     def getSamplesToCheck(self):
