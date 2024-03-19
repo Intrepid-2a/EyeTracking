@@ -173,7 +173,7 @@ class EyeTracker:
                 if os.path.isdir(filefolder):
                     if isinstance(filename, str):
                         if len(filename) > 0:
-                            # CHECK IF FILE EXISTS?
+                            # CHECK IF FILE ALREADY EXISTS?
                             self.storefiles  = True
                             self.filefolder  = filefolder
                             self.filename    = filename
@@ -492,6 +492,10 @@ class EyeTracker:
         if self.storefiles:
             eyetracker_config['default_native_data_file_name'] = self.filename  # correct extention is added by IOhub
             eyetracker_config['local_edf_dir'] = self.filefolder                # otherwise this ends up in the main folder where the experiment itself lives
+        else:
+            print('no eyelink files should be stored')
+            eyetracker_config['default_native_data_file_name'] = ''  # correct extention is added by IOhub
+            eyetracker_config['local_edf_dir'] = ''                  # otherwise this ends up in the main folder where the experiment itself lives
         devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
 
         # not sure this needs to be stored, but let's just have the info available in the future:
