@@ -316,6 +316,8 @@ class EyeTracker:
 
         screen = self.psychopyWindow.screen
         color  = self.psychopyWindow.color
+        if 'back_col' in self.colors.keys():
+            color = self.colors['back_col']
 
         self.__EL_window = win = visual.Window(resolution, 
                                                monitor    = mymonitor, 
@@ -484,7 +486,10 @@ class EyeTracker:
         eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
         # eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='BOTH') # this line from Clement, but let's try the next one for now:
         eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
-        eyetracker_config['calibration'] = dict(screen_background_color=colors['col_back'])
+        if 'back_col' in self.colors.keys():
+            eyetracker_config['calibration'] = dict(screen_background_color=self.colors['back_col'])
+        else:
+            eyetracker_config['calibration'] = dict(screen_background_color=[0.5, 0.5, -1]) # close enough for most cases?
         if self.calibrationpoints == 5:
             eyetracker_config['calibration'] = dict(type='FIVE_POINTS')
         if self.calibrationpoints == 9:
