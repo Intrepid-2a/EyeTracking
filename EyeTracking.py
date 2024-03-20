@@ -71,7 +71,10 @@ class EyeTracker:
         # maybe these should be a property that has a function to set it?
         # it's only used for the LiveTrack, so probably not...
         # self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
-
+        
+        print(filefolder)
+        print(filename)
+        print(self.storefiles)
         
         self.__fileOpen = False
         self.__recording = False
@@ -468,13 +471,13 @@ class EyeTracker:
         track_eyes = None
         if all(self.trackEyes):
             # track_eyes = 'LEFT,RIGHT' # this line had a typoe, but also, it's not what Clement sent me earlier:
-            track_eyes = 'BOTH'
+            track_eyes = 'BINOCULAR'
         else:
             # only one eye is tracked?
             if self.trackEyes[0]:
-                track_eyes = 'LEFT'  # or just 'LEFT' ?
+                track_eyes = 'LEFT_EYE'  # or just 'LEFT' ?
             if self.trackEyes[1]:
-                track_eyes = 'RIGHT'  # or just 'RIGHT' ?
+                track_eyes = 'RIGHT_EYE'  # or just 'RIGHT' ?
         # if no eye is tracked, that is going to be really hard for calibration and getting any samples...
         if track_eyes == None:
             raise Warning("trackEyes needs to set at least one eye to be tracked")
@@ -486,21 +489,57 @@ class EyeTracker:
         eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
         # eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='BOTH') # this line from Clement, but let's try the next one for now:
         eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
-        if 'back_col' in self.colors.keys():
-            eyetracker_config['calibration'] = dict(screen_background_color=self.colors['back_col'])
-        else:
-            eyetracker_config['calibration'] = dict(screen_background_color=[0.5, 0.5, -1]) # close enough for most cases?
-        if self.calibrationpoints == 5:
-            eyetracker_config['calibration'] = dict(type='FIVE_POINTS')
-        if self.calibrationpoints == 9:
-            eyetracker_config['calibration'] = dict(type='NINE_POINTS')
+
         if self.storefiles:
             eyetracker_config['default_native_data_file_name'] = self.filename  # correct extention is added by IOhub
             eyetracker_config['local_edf_dir'] = self.filefolder                # otherwise this ends up in the main folder where the experiment itself lives
+        # else:
+        #     print('no eyelink files should be stored')
+        #     eyetracker_config['default_native_data_file_name'] = ''  # correct extention is added by IOhub
+        #     eyetracker_config['local_edf_dir'] = ''                  # otherwise this ends up in the main folder where the experiment itself lives
+
+        # this calibration dictionary based on:
+        # https://psychopy.org/api/iohub/device/eyetracker_interface/SR_Research_Implementation_Notes.html
+        calibration = {
+                       'auto_pace': True,
+                       'pacing_speed': 1.5,
+                       'target_type': 'CIRCLE_TARGET',
+                       'target_attributes': {
+                            'outer_diameter': 1.0 / self.__EL_p2df,
+                            'inner_diameter': 0.2 / self.__EL_p2df,
+                            'outer_color': [255,255,255,255],
+                            'inner_color': [0,0,0,255]
+                            }
+                       }
+        
+
+        # inner diameter: 0.2 dva
+        # outer diameter: 1.0 dva
+
+
+
+        if self.calibrationpoints == 5:
+            calibration['type']='FIVE_POINTS'
+        if self.calibrationpoints == 9:
+            calibration['type']='NINE_POINTS'
+
+        if 'back' in self.colors.keys():
+            calibration['screen_background_color'] = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
+            calibration['target_attributes']['inner_color'] = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
         else:
-            print('no eyelink files should be stored')
-            eyetracker_config['default_native_data_file_name'] = ''  # correct extention is added by IOhub
-            eyetracker_config['local_edf_dir'] = ''                  # otherwise this ends up in the main folder where the experiment itself lives
+            calibration['screen_background_color'] = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255] # close enough for most cases?
+            calibration['target_attributes']['outer_color'] = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255]
+
+        if 'both' in self.colors.keys():
+            calibration['target_attributes']['outer_color'] = [round((x + 1)*(255/2)) for x in self.colors['both']]+[255]
+        else:
+            calibration['target_attributes']['outer_color'] = [0,0,0,255] # black...
+
+
+
+
+        eyetracker_config['calibration'] = calibration
+
         devices_config['eyetracker.hw.sr_research.eyelink.EyeTracker'] = eyetracker_config
 
         # not sure this needs to be stored, but let's just have the info available in the future:
@@ -1275,19 +1314,19 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
         if glasses in ['RG', 'RB']:
             if glasses == 'RG':
                 if location == 'glasgow':
-                    colors['back_col']   = [ 0.55,  0.45, -1.00] 
-                    colors['red_col']    = [ 0.55, -1.00, -1.00]
-                    colors['blue_col']   = [-1.00,  0.45, -1.00]
+                    colors['back']   = [ 0.55,  0.45, -1.00] 
+                    colors['red']    = [ 0.55, -1.00, -1.00]
+                    colors['blue']   = [-1.00,  0.45, -1.00]
                 if location == 'toronto':
-                    colors['back_col']   = [ 0.5,   0.5,  -1.0 ]
-                    colors['red_col']    = [ 0.5,  -1.0,  -1.0 ]
-                    colors['blue_col']   = [-1.0,   0.5,  -1.0 ]
+                    colors['back']   = [ 0.5,   0.5,  -1.0 ]
+                    colors['red']    = [ 0.5,  -1.0,  -1.0 ]
+                    colors['blue']   = [-1.0,   0.5,  -1.0 ]
             if glasses == 'RB':
                 # this should no longer be used:
                 print('are you sure about using RED/BLUE glasses?')
-                colors['back_col']   = [ 0.5, -1.0,  0.5]
-                colors['red_col']    = [ 0.5, -1.0, -1.0]
-                colors['blue_col']   = [-1.0, -1.0,  0.5] 
+                colors['back']   = [ 0.5, -1.0,  0.5]
+                colors['red']    = [ 0.5, -1.0, -1.0]
+                colors['blue']   = [-1.0, -1.0,  0.5] 
         else:
             raise Warning('glasses should be RG (default) or RB')
     else:
@@ -1366,15 +1405,11 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
                     colors            = colors )
 
 
-    # colors = {'back_col' : back_col,
-    #           'red_col'  : red_col,
-    #           'blue_col' : blue_col }
-
     fcols = [[-1,-1,-1],[1,1,1]]
     if 'both' in colors.keys():
         fcols[0] = colors['both']
-    if 'back_col' in colors.keys():
-        fcols[1] = colors['back_col']
+    if 'back' in colors.keys():
+        fcols[1] = colors['back']
 
     fusion = {'hi': fusionStim(win    = win,
                                pos    = [0,7],
