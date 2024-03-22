@@ -485,10 +485,10 @@ class EyeTracker:
 
         # set up configuration for our particular EyeLink
         devices_config = dict()
-        eyetracker_config = dict(name='tracker')
+        eyetracker_config = dict('name'='tracker')
         eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
         # eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='BOTH') # this line from Clement, but let's try the next one for now:
-        eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes=track_eyes)
+        eyetracker_config['runtime_settings'] = dict('sampling_rate'=1000, 'track_eyes'=track_eyes)
 
         if self.storefiles:
             eyetracker_config['default_native_data_file_name'] = self.filename  # correct extention is added by IOhub
@@ -516,7 +516,7 @@ class EyeTracker:
         # inner diameter: 0.2 dva
         # outer diameter: 1.0 dva
 
-
+        # according to the website, these need old fashioned 0-255 colors, with a transparency byte [r,g,b,a]
 
         if self.calibrationpoints == 5:
             calibration['type']='FIVE_POINTS'
