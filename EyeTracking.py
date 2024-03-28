@@ -1436,11 +1436,12 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
     # which returns an empty dictionary
     blindspotmarkers = makeBlindSpotMarkers(win=win, task=task, ID=ID, colors=colors)
 
-    return( {'win'      : win,
-             'tracker'  : ET,
-             'colors'   : colors,
-             'fusion'   : fusion,
-             'fixation' : fixation } )
+    return( {'win'              : win,
+             'tracker'          : ET,
+             'colors'           : colors,
+             'fusion'           : fusion,
+             'fixation'         : fixation,
+             'blindspotmarkers' : blindspotmarkers } )
 
 def getColors(colors, task, ID):
 
