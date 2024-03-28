@@ -1391,9 +1391,9 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
                                 vertices = ((0, -1), (0, 1), (0,0), (-1, 0), (1, 0)), 
                                 lineWidth = 5, 
                                 units = 'deg', 
-                                size = (1, 1), 
+                                size = (1, 1), # might be too small?
                                 closeShape = False, 
-                                lineColor = 'white')
+                                lineColor = 'black')
 
     if 'both' in colors.keys():
         fixation.lineColor = colors['both']
