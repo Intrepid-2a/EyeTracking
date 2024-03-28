@@ -1291,7 +1291,7 @@ class EyeTracker:
 
 
 
-def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG', colors=None ):
+def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG', colors=None, task=None, ID=None ):
     
     # sanity checks on trackEyes, filefolder and filename are done by the eyetracker object
 
@@ -1305,6 +1305,10 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
             location = 'glasgow'
     else:
         raise Warning("set location to a string: Glasgow or Toronto")
+
+
+
+    # RED/GREEN COLORS
 
     if colors == None:
         colors = {}
@@ -1332,6 +1336,14 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
     else:
         raise Warning('glasses should be a string')
 
+    # CALIBRATED COLORS:
+
+    # for blind spot mapping, task == None, but it still needs the calibrated colors...
+    # handle this in the function?
+    colors = getColors(colors=colors, task=task, ID=ID)
+
+
+    # WINDOW OBJECT
 
     if location == 'glasgow':
         # not a calibrated monitor?
@@ -1392,6 +1404,7 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
         trackEyes = [True, False]
 
     print(filefolder)
+
     ET = EyeTracker(tracker           = tracker,
                     trackEyes         = trackEyes,
                     fixationWindow    = 2.0,
@@ -1418,12 +1431,106 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
                                pos    = [0,-7],
                                colors = fcols)}
 
+    # color calibration doesn't use any of this (except the window object?)
+    # for either calibration task, the task should not be set
+    # which returns an empty dictionary
+    blindspotmarkers = makeBlindSpotMarkers(win=win, task=task, ID=ID, colors=colors)
+
     return( {'win'      : win,
              'tracker'  : ET,
              'colors'   : colors,
              'fusion'   : fusion,
              'fixation' : fixation } )
 
+def getColors(colors, task, ID):
+
+    if task == None:
+        return(colors)
+
+    if ID == None:
+        return(colors)
+
+    ## colour (eye) parameters
+    all_files = glob('../data/' + task + '/color/' + ID + '_col_cal*.txt')
+    if len(all_files) == 0:
+        # no color calibration done, skip
+        return(colors)
+    col_file = open(all_files[-1],'r')
+    col_param = col_file.read().replace('\t','\n').split('\n')
+    col_file.close()
+
+    # let's flip this depending on the task run, in each of the experiments?
+    # col_ipsi = eval(col_param[3]) if hemifield == 'left' else eval(col_param[5]) # left or right
+    # col_cont = eval(col_param[5]) if hemifield == 'left' else eval(col_param[3]) # right or left
+
+    # so use the left / right things for now
+    colors['left']  = col_param[3]
+    colors['right'] = col_param[5]
+
+    # both should be defined in 1 way... up for grabs how, afaic
+    # colors['both']  = [-0.7, -0.7, -0.7] # from 2nd FBE version of the distance task
+    colors['both']  = [eval(col_param[3])[1], eval(col_param[5])[0], -1]
+
+    return(colors)
+
+    
+
+def makeBlindSpotMarkers(win, task, ID, colors):
+
+    if task == None:
+        return({})
+
+    if ID == None:
+        return({})
+
+    main_path = '../data/' + task + '/'
+    
+    ## blindspot parameters
+    bs_file = open(glob(main_path + 'mapping/' + ID + '_LH_blindspot*.txt')[-1], 'r')
+    bs_param = bs_file.read().replace('\t','\n').split('\n')
+    bs_file.close()
+    spot_left_cart = eval(bs_param[1])
+    spot_left = cart2pol(spot_left_cart[0], spot_left_cart[1])
+    spot_left_size = eval(bs_param[3])
+
+    bs_file = open(glob(main_path + 'mapping/' + ID + '_RH_blindspot*.txt')[-1],'r')
+    bs_param = bs_file.read().replace('\t','\n').split('\n')
+    bs_file.close()
+    spot_righ_cart = eval(bs_param[1])
+    spot_righ = cart2pol(spot_righ_cart[0], spot_righ_cart[1])
+    spot_righ_size = eval(bs_param[3])
+
+
+    blindspotmarkers = {}
+    
+    for hemifield in ['left','right']:
+
+        if hemifield == 'left':
+            spot_cart = spot_left_cart
+            spot      = spot_left
+            spot_size = spot_left_size
+        else:
+            spot_cart = spot_righ_cart
+            spot      = spot_righ
+            spot_size = spot_righ_size
+
+        tar =  spot_size[0] + 2 + 2
+
+        # size of blind spot + 2 (dot width, padding)
+        if hemifield == 'left' and spot_cart[1] < 0:
+            ang_up = (cart2pol(spot_cart[0], spot_cart[1] - spot_size[1])[0] - spot[0]) + 2
+        else:
+            ang_up = (cart2pol(spot_cart[0], spot_cart[1] + spot_size[1])[0] - spot[0]) + 2
+
+        blindspot = visual.Circle(win, radius = .5, pos = [7,0], units = 'deg', fillColor=colors[hemifield], lineColor = None)
+        blindspot.pos = spot_cart
+        blindspot.size = spot_size
+        # blindspot.autoDraw = True
+        # set autodraw only on the one used in the task
+
+        blindspotmarkers[hemifield] = blindspot
+
+    return(blindspotmarkers)
 
 
 
