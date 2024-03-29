@@ -9,6 +9,8 @@ import json
 import copy
 import random
 
+from glob import glob
+
 
 # to test if input objects are valid psychopy classes:
 import psychopy
@@ -485,10 +487,10 @@ class EyeTracker:
 
         # set up configuration for our particular EyeLink
         devices_config = dict()
-        eyetracker_config = dict('name'='tracker')
+        eyetracker_config = {'name':'tracker'}
         eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
         # eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='BOTH') # this line from Clement, but let's try the next one for now:
-        eyetracker_config['runtime_settings'] = dict('sampling_rate'=1000, 'track_eyes'=track_eyes)
+        eyetracker_config['runtime_settings'] = {'sampling_rate':1000, 'track_eyes':track_eyes}
 
         if self.storefiles:
             eyetracker_config['default_native_data_file_name'] = self.filename  # correct extention is added by IOhub
@@ -1384,7 +1386,7 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
 
 
     #win = visual.Window([1000, 500], allowGUI=True, monitor='ccni', units='deg', fullscr=True, color = back_col, colorSpace = 'rgb')
-    win = visual.Window(resolution, monitor=mymonitor, allowGUI=True, units='deg', fullscr=True, color=colors['back_col'], colorSpace = 'rgb', screen=screen)
+    win = visual.Window(resolution, monitor=mymonitor, allowGUI=True, units='deg', fullscr=True, color=colors['back'], colorSpace = 'rgb', screen=screen)
             # size = [34.5, 19.5]filefolder,
 
     fixation = visual.ShapeStim(win, 
@@ -1393,7 +1395,7 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
                                 units = 'deg', 
                                 size = (1, 1), # might be too small?
                                 closeShape = False, 
-                                lineColor = 'black')
+                                lineColor = [-0.5, -0.5, -1.0]) # close to col_both?
 
     if 'both' in colors.keys():
         fixation.lineColor = colors['both']
