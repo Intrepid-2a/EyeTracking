@@ -59,6 +59,7 @@ class EyeTracker:
 
         self.setPsychopyWindow(psychopyWindow)
         self.setCalibrationpoints(calibrationpoints)
+        self.setColors(colors)
         self.setEyetracker(tracker)
         self.trackEyes(trackEyes)
         self.setFixationWindow(fixationWindow)
@@ -66,7 +67,7 @@ class EyeTracker:
         self.setFixTimeout(fixTimeout)
         self.setFilePath(filefolder, filename)
         self.setSamplemode(samplemode)
-        self.setColors(colors)
+
 
         # things below this comment are still up for change... depends a bit on how the EyeLink does things
 
@@ -321,8 +322,13 @@ class EyeTracker:
 
         screen = self.psychopyWindow.screen
         color  = self.psychopyWindow.color
-        if 'back_col' in self.colors.keys():
-            color = self.colors['back_col']
+        if hasattr(self, colors):
+            if 'back' in self.colors.keys():
+                color = self.colors['back']
+        else:
+            # what is a sensible default?
+            color = [0,0,0]
+            print('No color attribute, using PsychoPy default background color.')
 
         self.__EL_window = win = visual.Window(resolution, 
                                                monitor    = mymonitor, 
