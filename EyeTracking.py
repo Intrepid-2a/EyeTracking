@@ -322,7 +322,7 @@ class EyeTracker:
 
         screen = self.psychopyWindow.screen
         color  = self.psychopyWindow.color
-        if hasattr(self, colors):
+        if hasattr(self, 'colors'):
             if 'back' in self.colors.keys():
                 color = self.colors['back']
         else:
