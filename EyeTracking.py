@@ -301,14 +301,14 @@ class EyeTracker:
             # #win = visual.Window([1000, 500], allowGUI=True, monitor='ccni', units='deg', fullscr=True, color = back_col, colorSpace = 'rgb')
             # win = visual.Window(resolution, monitor=mymonitor, allowGUI=True, units='deg', fullscr=True, color=back_col, colorSpace = 'rgb', screen=screen)
 
-        resolution = self.psychopyWindow.monitor.getSizePix()
-        width      = self.psychopyWindow.monitor.getWidth()
-        distance   = self.psychopyWindow.monitor.getDistance()
+        # resolution = self.psychopyWindow.monitor.getSizePix()
+        # width      = self.psychopyWindow.monitor.getWidth()
+        # distance   = self.psychopyWindow.monitor.getDistance()
 
-        mymonitor = monitors.Monitor(name='EL_temp',
-                                     distance=distance,
-                                     width=width
-                                     )
+        # mymonitor = monitors.Monitor(name='EL_temp',
+        #                              distance=distance,
+        #                              width=width
+        #                              )
 
         # leave out the whole gamma grid for now, it's not relevant at this point, maybe in the future?
 
@@ -320,24 +320,24 @@ class EyeTracker:
         # if not np.array_equal(mymonitor.getGammaGrid()[:,:3], defaultGammaGrid[:,:3]):
         #     mymonitor.setGammaGrid(gammaGrid)
 
-        screen = self.psychopyWindow.screen
-        color  = self.psychopyWindow.color
-        if hasattr(self, 'colors'):
-            if 'back' in self.colors.keys():
-                color = self.colors['back']
-        else:
-            # what is a sensible default?
-            color = [0,0,0]
-            print('No color attribute, using PsychoPy default background color.')
+        # screen = self.psychopyWindow.screen
+        # color  = self.psychopyWindow.color
+        # if hasattr(self, 'colors'):
+        #     if 'back' in self.colors.keys():
+        #         color = self.colors['back']
+        # else:
+        #     # what is a sensible default?
+        #     color = [0,0,0]
+        #     print('No color attribute, using PsychoPy default background color.')
 
-        self.__EL_window = win = visual.Window(resolution, 
-                                               monitor    = mymonitor, 
-                                               allowGUI   = True, 
-                                               units      = 'pix', 
-                                               fullscr    = True,
-                                               color      = color,
-                                               colorSpace = 'rgb', 
-                                               screen     = screen)
+        # self.__EL_window = win = visual.Window(resolution, 
+        #                                        monitor    = mymonitor, 
+        #                                        allowGUI   = True, 
+        #                                        units      = 'pix', 
+        #                                        fullscr    = True,
+        #                                        color      = color,
+        #                                        colorSpace = 'rgb', 
+        #                                        screen     = screen)
 
         # remap functions:
         self.initialize = self.__EL_initialize
@@ -531,6 +531,8 @@ class EyeTracker:
         if self.calibrationpoints == 9:
             calibration['type']='NINE_POINTS'
 
+        
+
         if 'back' in self.colors.keys():
             calibration['screen_background_color'] = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
             calibration['target_attributes']['inner_color'] = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
@@ -553,14 +555,19 @@ class EyeTracker:
         # not sure this needs to be stored, but let's just have the info available in the future:
         self.devices_config = devices_config
 
+
+        self.psychopyWindow.units = 'deg'
+
         # launch a tracker device thing in the iohub:
         # self.io = self.launchHubServer(window = self.psychopyWindow, **devices_config)
-        self.io = self.launchHubServer(window = self.__EL_window, **devices_config)
+        self.io = self.launchHubServer(window = self.psychopyWindow, **devices_config)
 
         self.tracker = self.io.getDevice('tracker')
 
+        self.psychopyWindow.units = 'deg'
+
         # this part might not be cool? otoh, we don't need that window any more... and it should not block the main window
-        self.__EL_window.close()
+        # self.__EL_window.close()
 
 
     def __LT_initialize(self):
