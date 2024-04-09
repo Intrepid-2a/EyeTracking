@@ -172,6 +172,8 @@ class EyeTracker:
 
     def setFilePath(self, filefolder, filename):
         self.storefiles = False
+        self.filefolder = None
+        self.filename = None
         if isinstance(filefolder, str):
             if len(filefolder) > 0:
                 # self.storefiles = False
@@ -225,11 +227,16 @@ class EyeTracker:
         # eyetracker_config['calibration'] = dict(type='THIRTEEN_POINTS')
 
     def setColors(self, colors):
+
+        print(colors)
+
         if isinstance(colors, dict):
             # no more checks for now, but should check that it has at least col_back: used for eyelink calibration...
             self.colors = colors
         else:
             raise Warning("colors should be a dictionary")
+
+        print(self.colors)
 
 
     def setupEyeLink(self):
@@ -501,10 +508,10 @@ class EyeTracker:
         if self.storefiles:
             eyetracker_config['default_native_data_file_name'] = self.filename  # correct extention is added by IOhub
             eyetracker_config['local_edf_dir'] = self.filefolder                # otherwise this ends up in the main folder where the experiment itself lives
-        # else:
-        #     print('no eyelink files should be stored')
-        #     eyetracker_config['default_native_data_file_name'] = ''  # correct extention is added by IOhub
-        #     eyetracker_config['local_edf_dir'] = ''                  # otherwise this ends up in the main folder where the experiment itself lives
+        else:
+            print('no eyelink files should be stored')
+            eyetracker_config['default_native_data_file_name'] = None  # correct extention is added by IOhub
+            eyetracker_config['local_edf_dir'] = None                  # otherwise this ends up in the main folder where the experiment itself lives
 
         # this calibration dictionary based on:
         # https://psychopy.org/api/iohub/device/eyetracker_interface/SR_Research_Implementation_Notes.html
