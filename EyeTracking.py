@@ -1122,7 +1122,7 @@ class EyeTracker:
         return(sample)
 
     def __DM_lastsample(self):
-        print('not implemented: getting last dummy mouse sample')
+        # print('not implemented: getting last dummy mouse sample')
         data = np.array(self.__mousetracker.getPos())
 
         sample = {}
@@ -1156,7 +1156,7 @@ class EyeTracker:
                     return(False) # return False if there is a nan value
                 d = np.sqrt(np.sum(np.array(sample[cs])**2))
                 if d > self.fixationWindow:
-                    return(False) # return false if the distance from fixation is larger than 2
+                    return(False) # return false if the distance from fixation is larger than 2 (or whatever the fixation window is)
             else:
                 return(False) # return false if any of the samples that need to be checked are not in the data
 
@@ -1177,6 +1177,8 @@ class EyeTracker:
             minFixDur = self.minFixDur
         if fixTimeout == None:
             fixTimeout = self.fixTimeout
+
+        self.target.pos = [0,0]
 
         # most the initially set values should be used, but we do 1 sanity check here:
         # if the initially set values are used, this should already be true:
@@ -1258,11 +1260,12 @@ class EyeTracker:
         raise Warning("default function: tracker not set")
 
     def __EL_shutdown(self):
-        self.tracker.setConnectionState(False) # does this download the EDF file as well? should be set up somewhere...
         self.stopcollecting()
         self.closefile()
+        self.tracker.setConnectionState(False)
         self.io.quit()
-        # is this sufficient to store what we need?
+        if os.path.isfile('et_data.EDF'):
+            os.remove('et_data.EDF')
 
     def __LT_shutdown(self):
         self.stopcollecting()
@@ -1270,13 +1273,17 @@ class EyeTracker:
         self.LiveTrack.Close()
 
     def __DM_shutdown(self):
-        print('not implemented yet: dummy mouse shutdown')
+        print('[dummy mouse shutdown called]')
         # no need for any shutdown action, it seems:
         # there are no files, and connections to close
 
     # endregion
 
-
+    # this runs shutdown on garbage collection
+    # which could be much later then expected
+    # it's to make sure it gets doen at some point
+    def __del__(self):
+        self.shutdown()
 
 
     def __createTargetStim(self):
