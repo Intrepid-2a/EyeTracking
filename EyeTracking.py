@@ -539,23 +539,24 @@ class EyeTracker:
             calibration['type']='NINE_POINTS'
 
         
+        if hasattr(self, 'colors'): # this will now also work if the input argument 'colors' is none: checking a key in a non-existent dirctionary will always yield an error
+            if 'back' in self.colors.keys():
+                print(self.colors['back'])
+                back_col = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
+            else:
+                back_col = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255] # close enough for most cases?
 
-        if 'back' in self.colors.keys():
-            print(self.colors['back'])
-            back_col = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
-        else:
-            back_col = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255] # close enough for most cases?
+            if 'both' in self.colors.keys():
+                print(self.colors['both'])
+                col_both = [round((x + 1)*(255/2)) for x in self.colors['both']]+[255]
+            else:
+                col_both = [0,0,0,255] # black... ?
+
 
         print(back_col)
         calibration['screen_background_color'] = back_col
         calibration['target_attributes']['outer_color'] = back_col
-
-        if 'both' in self.colors.keys():
-            print(self.colors['both'])
-            col_both = [round((x + 1)*(255/2)) for x in self.colors['both']]+[255]
-        else:
-            col_both = [0,0,0,255] # black... ?
-
+ 
         print(col_both)
         calibration['target_attributes']['outer_color'] = col_both
 
