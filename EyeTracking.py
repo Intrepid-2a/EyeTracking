@@ -541,17 +541,23 @@ class EyeTracker:
         
 
         if 'back' in self.colors.keys():
-            calibration['screen_background_color'] = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
-            calibration['target_attributes']['inner_color'] = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
+            print(self.colors['back'])
+            back_col = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
         else:
-            calibration['screen_background_color'] = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255] # close enough for most cases?
-            calibration['target_attributes']['outer_color'] = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255]
+            back_col = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255] # close enough for most cases?
+
+        print(back_col)
+        calibration['screen_background_color'] = back_col
+        calibration['target_attributes']['outer_color'] = back_col
 
         if 'both' in self.colors.keys():
-            calibration['target_attributes']['outer_color'] = [round((x + 1)*(255/2)) for x in self.colors['both']]+[255]
+            print(self.colors['both'])
+            col_both = [round((x + 1)*(255/2)) for x in self.colors['both']]+[255]
         else:
-            calibration['target_attributes']['outer_color'] = [0,0,0,255] # black...
+            col_both = [0,0,0,255] # black... ?
 
+        print(col_both)
+        calibration['target_attributes']['outer_color'] = col_both
 
 
 
