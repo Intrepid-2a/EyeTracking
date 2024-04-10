@@ -505,13 +505,17 @@ class EyeTracker:
         # eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='BOTH') # this line from Clement, but let's try the next one for now:
         eyetracker_config['runtime_settings'] = {'sampling_rate':1000, 'track_eyes':track_eyes}
 
-        if self.storefiles:
-            eyetracker_config['default_native_data_file_name'] = self.filename  # correct extention is added by IOhub
-            eyetracker_config['local_edf_dir'] = self.filefolder                # otherwise this ends up in the main folder where the experiment itself lives
-        else:
-            print('no eyelink files should be stored')
-            eyetracker_config['default_native_data_file_name'] = None  # correct extention is added by IOhub
-            eyetracker_config['local_edf_dir'] = None                  # otherwise this ends up in the main folder where the experiment itself lives
+        # if self.storefiles:
+        #     eyetracker_config['default_native_data_file_name'] = self.filename  # correct extention is added by IOhub
+        #     eyetracker_config['local_edf_dir'] = self.filefolder                # otherwise this ends up in the main folder where the experiment itself lives
+        # else:
+        #     print('no eyelink files should be stored')
+        #     eyetracker_config['default_native_data_file_name'] = None 
+        #     eyetracker_config['local_edf_dir'] = None                 
+
+        eyetracker_config['default_native_data_file_name'] = None
+        eyetracker_config['local_edf_dir'] = None
+
 
         # this calibration dictionary based on:
         # https://psychopy.org/api/iohub/device/eyetracker_interface/SR_Research_Implementation_Notes.html
@@ -521,9 +525,9 @@ class EyeTracker:
                        'target_type': 'CIRCLE_TARGET',
                        'target_attributes': {
                             'outer_diameter': 1.0 / self.__EL_p2df,
-                            'inner_diameter': 0.2 / self.__EL_p2df,
-                            'outer_color': [255,255,255,255],
-                            'inner_color': [0,0,0,255]
+                            'inner_diameter': 0.2 / self.__EL_p2df
+                            # 'outer_color': [255,255,255,255],
+                            # 'inner_color': [0,0,0,255]
                             }
                        }
         
@@ -539,23 +543,30 @@ class EyeTracker:
             calibration['type']='NINE_POINTS'
 
         
+        # default colors:
+        col_back = [0.5, 0.5, -1]
+        col_both = [-1, -1, -1]
+        # overwrite default colors if specs available:
         if hasattr(self, 'colors'): # this will now also work if the input argument 'colors' is none: checking a key in a non-existent dirctionary will always yield an error
             if 'back' in self.colors.keys():
-                print(self.colors['back'])
-                back_col = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
-            else:
-                back_col = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255] # close enough for most cases?
+                # print(self.colors['back'])
+                # col_back = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
+                col_back = self.colors['back']
+            # else:
+            #     # col_back = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255] # close enough for most cases?
+            #     col_back = [0.5, 0.5, -1]
 
             if 'both' in self.colors.keys():
-                print(self.colors['both'])
-                col_both = [round((x + 1)*(255/2)) for x in self.colors['both']]+[255]
-            else:
-                col_both = [0,0,0,255] # black... ?
+                # print(self.colors['both'])
+                # col_both = [round((x + 1)*(255/2)) for x in self.colors['both']]+[255]
+                col_both = self.colors['both']
+            # else:
+            #     # col_both = [0,0,0,255] # black... ?
+            #     col_both = [-1, -1, -1]
 
-
-        print(back_col)
-        calibration['screen_background_color'] = back_col
-        calibration['target_attributes']['outer_color'] = back_col
+        print(col_back)
+        calibration['screen_background_color'] = col_back
+        calibration['target_attributes']['inner_color'] = col_back
  
         print(col_both)
         calibration['target_attributes']['outer_color'] = col_both
@@ -1285,8 +1296,17 @@ class EyeTracker:
         self.closefile()
         self.tracker.setConnectionState(False)
         self.io.quit()
-        if os.path.isfile('et_data.EDF'):
-            os.remove('et_data.EDF')
+
+        if self.storefiles:
+            src = 'et_data.EDF
+            dst = os.path.join(self.filefolder, self.filename + '.EDF')
+
+            # os.rename can use relative paths:
+            os.rename(src, dst)
+
+        else:
+            if os.path.isfile('et_data.EDF'):
+                os.remove('et_data.EDF')
 
     def __LT_shutdown(self):
         self.stopcollecting()
@@ -1300,9 +1320,12 @@ class EyeTracker:
 
     # endregion
 
+
+
     # this runs shutdown on garbage collection
     # which could be much later then expected
-    # it's to make sure it gets doen at some point
+    # it's to make sure it gets done at some point
+    # especially since it renames/moves eyelink data files now
     def __del__(self):
         self.shutdown()
 
