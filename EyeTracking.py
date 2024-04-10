@@ -228,7 +228,7 @@ class EyeTracker:
 
     def setColors(self, colors):
 
-        print(colors)
+        # print(colors)
 
         if isinstance(colors, dict):
             # no more checks for now, but should check that it has at least col_back: used for eyelink calibration...
@@ -236,7 +236,7 @@ class EyeTracker:
         else:
             raise Warning("colors should be a dictionary")
 
-        print(self.colors)
+        # print(self.colors)
 
 
     def setupEyeLink(self):
