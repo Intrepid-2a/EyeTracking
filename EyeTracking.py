@@ -581,7 +581,7 @@ class EyeTracker:
         self.devices_config = devices_config
 
 
-        self.psychopyWindow.units = 'deg'
+        self.psychopyWindow.units = 'pix'
 
         # launch a tracker device thing in the iohub:
         # self.io = self.launchHubServer(window = self.psychopyWindow, **devices_config)
