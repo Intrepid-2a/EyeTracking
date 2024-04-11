@@ -523,55 +523,34 @@ class EyeTracker:
                        'auto_pace': True,
                        'pacing_speed': 1.5,
                        'target_type': 'CIRCLE_TARGET',
+                       'screen_background_color' : [0.5, 0.5, -1],    # default color for these experiments?
                        'target_attributes': {
                             'outer_diameter': 1.0 / self.__EL_p2df,
                             'inner_diameter': 0.2 / self.__EL_p2df
-                            # 'outer_color': [255,255,255,255],
-                            # 'inner_color': [0,0,0,255]
+                            'outer_color': [-1, -1, -1],    # default colors values, not ideal
+                            'inner_color': [0.5, 0.5, -1]   # but they do the trick if colors doesn't exist
                             }
                        }
         
-
+        # should this be some option we can set?
         # inner diameter: 0.2 dva
         # outer diameter: 1.0 dva
 
-        # according to the website, these need old fashioned 0-255 colors, with a transparency byte [r,g,b,a]
+        # overwrite default colors if specs available:
+        if hasattr(self, 'colors'): # this will now also work if the input argument 'colors' is none: checking a key in a non-existent dirctionary will always yield an error
+            if 'back' in self.colors.keys():
+                calibration['screen_background_color'] = self.colors['back']
+                calibration['target_attributes']['inner_color'] = self.colors['back']
+
+            if 'both' in self.colors.keys():
+                calibration['target_attributes']['outer_color'] = self.colors['both']
+
 
         if self.calibrationpoints == 5:
             calibration['type']='FIVE_POINTS'
         if self.calibrationpoints == 9:
             calibration['type']='NINE_POINTS'
-
         
-        # default colors:
-        col_back = [0.5, 0.5, -1]
-        col_both = [-1, -1, -1]
-        # overwrite default colors if specs available:
-        if hasattr(self, 'colors'): # this will now also work if the input argument 'colors' is none: checking a key in a non-existent dirctionary will always yield an error
-            if 'back' in self.colors.keys():
-                # print(self.colors['back'])
-                # col_back = [round((x + 1)*(255/2)) for x in self.colors['back']]+[255]
-                col_back = self.colors['back']
-            # else:
-            #     # col_back = [round((x + 1)*(255/2)) for x in [0.5, 0.5, -1]]+[255] # close enough for most cases?
-            #     col_back = [0.5, 0.5, -1]
-
-            if 'both' in self.colors.keys():
-                # print(self.colors['both'])
-                # col_both = [round((x + 1)*(255/2)) for x in self.colors['both']]+[255]
-                col_both = self.colors['both']
-            # else:
-            #     # col_both = [0,0,0,255] # black... ?
-            #     col_both = [-1, -1, -1]
-
-        print(col_back)
-        calibration['screen_background_color'] = col_back
-        calibration['target_attributes']['inner_color'] = col_back
- 
-        print(col_both)
-        calibration['target_attributes']['outer_color'] = col_both
-
-
 
         eyetracker_config['calibration'] = calibration
 
