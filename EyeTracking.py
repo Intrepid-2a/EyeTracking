@@ -513,8 +513,8 @@ class EyeTracker:
         #     eyetracker_config['default_native_data_file_name'] = None 
         #     eyetracker_config['local_edf_dir'] = None                 
 
-        eyetracker_config['default_native_data_file_name'] = None
-        eyetracker_config['local_edf_dir'] = None
+        # eyetracker_config['default_native_data_file_name'] = None
+        # eyetracker_config['local_edf_dir'] = None
 
 
         # this calibration dictionary based on:
@@ -1298,7 +1298,7 @@ class EyeTracker:
         self.io.quit()
 
         if self.storefiles:
-            src = 'et_data.EDF
+            src = 'et_data.EDF'
             dst = os.path.join(self.filefolder, self.filename + '.EDF')
 
             # os.rename can use relative paths:
@@ -1326,8 +1326,8 @@ class EyeTracker:
     # which could be much later then expected
     # it's to make sure it gets done at some point
     # especially since it renames/moves eyelink data files now
-    def __del__(self):
-        self.shutdown()
+    # def __del__(self):
+    #     self.shutdown()
 
 
     def __createTargetStim(self):
