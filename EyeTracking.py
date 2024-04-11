@@ -1297,7 +1297,6 @@ class EyeTracker:
         self.tracker.setConnectionState(False)
         self.io.quit()
 
-        print('>> shutdown:')
         print(glob('*.EDF'))
         print(glob('et_data.*'))
 
