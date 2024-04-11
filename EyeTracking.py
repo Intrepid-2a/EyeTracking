@@ -1297,6 +1297,10 @@ class EyeTracker:
         self.tracker.setConnectionState(False)
         self.io.quit()
 
+        print('>> shutdown:')
+        print(glob('*.EDF'))
+        print(glob('et_data.*'))
+
         if self.storefiles:
             src = 'et_data.EDF'
             dst = os.path.join(self.filefolder, self.filename + '.EDF')
