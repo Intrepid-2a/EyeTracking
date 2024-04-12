@@ -49,7 +49,8 @@ class EyeTracker:
                  filename=None,
                  samplemode=None,
                  calibrationpoints=5,
-                 colors=None):
+                 colors=None,
+                 fixationTarget=None):
 
 
         # the functions below check the user input,
@@ -67,7 +68,7 @@ class EyeTracker:
         self.setFixTimeout(fixTimeout)
         self.setFilePath(filefolder, filename)
         self.setSamplemode(samplemode)
-
+        self.setFixationTarget(fixationTarget)
 
         # things below this comment are still up for change... depends a bit on how the EyeLink does things
 
@@ -75,9 +76,9 @@ class EyeTracker:
         # it's only used for the LiveTrack, so probably not...
         # self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
         
-        print(filefolder)
-        print(filename)
-        print(self.storefiles)
+        # print(filefolder)
+        # print(filename)
+        # print(self.storefiles)
         
         self.__fileOpen = False
         self.__recording = False
@@ -167,7 +168,7 @@ class EyeTracker:
             else:
                 raise Warning("psychopyWindow must have units set to 'deg'")
         else:
-            raise Warning("psychopyWindow must by a psychopy Window")
+            raise Warning("psychopyWindow must be a psychopy Window")
 
 
     def setFilePath(self, filefolder, filename):
@@ -227,7 +228,7 @@ class EyeTracker:
                     self.__calibrationTargets = np.array([[0,0],   [-3,0],[0,3],[3,0],[0,-3],     [6,6],[6,-6],[-6,6],[-6,-6]])
                 # print(self.__calibrationTargets)
             else:
-                raise Warning("calibration points muct be 9 (default) or 5")
+                raise Warning("calibration points must be 9 (default) or 5")
         else:
             raise Warning("calibration points must be a number")
 
@@ -245,6 +246,16 @@ class EyeTracker:
             raise Warning("colors should be a dictionary")
 
         # print(self.colors)
+
+    def setFixationTarget(self, fixationTarget):
+        if hasattr(fixationTarget, 'draw'):
+            if fixationTarget.win == self.psychopyWindow:
+                # seems good?
+                self.fixationTarget = fixationTarget
+            else:
+                raise Warning("fixationTarget must be defined for the psychopyWindow")
+        else:
+            raise Warning("fixationTarget must be a PsychoPy visual stimulus with the draw method")
 
 
     def setupEyeLink(self):
@@ -1199,12 +1210,21 @@ class EyeTracker:
                  'right':['right'],
                  'average':['average']}[self.samplemode] )
 
-    def waitForFixation(self, minFixDur=None, fixTimeout=None):
+    def waitForFixation(self, minFixDur=None, fixTimeout=None, fixationTarget=None):
 
         if minFixDur == None:
             minFixDur = self.minFixDur
         if fixTimeout == None:
             fixTimeout = self.fixTimeout
+
+        if fixationTarget == None:
+            if hasattr(self, fixationTarget):
+                fixation = self.fixationTarget
+            else:
+                fixation = self.target
+        else:
+            # not checking if this is a correct object, leaving to caller:
+            fixation = fixationTarget
 
         self.target.pos = [0,0]
 
@@ -1221,7 +1241,7 @@ class EyeTracker:
 
         while now < timeout:
 
-            self.target.draw()
+            fixation.draw()
             self.psychopyWindow.flip()
 
             now = time.time()
