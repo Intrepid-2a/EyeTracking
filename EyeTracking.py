@@ -601,6 +601,11 @@ class EyeTracker:
         # this part might not be cool? otoh, we don't need that window any more... and it should not block the main window
         # self.__EL_window.close()
 
+    def setEyeLinkCalibrationScale(self):
+
+        self.tracker.sendCommand("calibration_area_proportion", "0.35 0.35")
+        self.tracker.sendCommand("calibration_corner_scaling", "1.00")
+
 
     def __LT_initialize(self):
         print('initialize LiveTrack')
