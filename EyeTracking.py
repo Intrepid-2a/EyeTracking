@@ -486,8 +486,17 @@ class EyeTracker:
         # # tell pylink to use the graphics environment:
         # self.pylink.openGraphicsEx(self.genv)
 
+        # check if default iohub tracker file already exists, and move it somewhere for safe keeping
+        if len(glob('et_data.EDF')):
+            os.makedirs('et_default_backups', exist_ok=True)
 
-        # old code for iohub:
+            tm = time.localtime()
+            datetime_str = '%d%02d%02d-%02d%02d%02d'%(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec)
+            dst = os.path.join('et_default_backups', 'et_data_' + datetime_str + '.EDF')
+
+            # os.rename can use relative paths:
+            os.rename('et_data.EDF', dst)
+
 
         # tell the eyelink which eyes to track
         # we'll store and make available the same eyes (this could be set up differently)
