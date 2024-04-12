@@ -526,7 +526,7 @@ class EyeTracker:
                        'screen_background_color' : [0.5, 0.5, -1],    # default color for these experiments?
                        'target_attributes': {
                             'outer_diameter': 1.0 / self.__EL_p2df,
-                            'inner_diameter': 0.2 / self.__EL_p2df
+                            'inner_diameter': 0.2 / self.__EL_p2df,
                             'outer_color': [-1, -1, -1],    # default colors values, not ideal
                             'inner_color': [0.5, 0.5, -1]   # but they do the trick if colors doesn't exist
                             }
@@ -1276,8 +1276,8 @@ class EyeTracker:
         self.tracker.setConnectionState(False)
         self.io.quit()
 
-        print(glob('*.EDF'))
-        print(glob('et_data.*'))
+        # print(glob('*.EDF'))
+        # print(glob('et_data.*'))
 
         if self.storefiles:
             src = 'et_data.EDF'
