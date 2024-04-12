@@ -1238,7 +1238,7 @@ class EyeTracker:
         #if self.__fileOpen:
 
         self.tracker.sendMessage(comment)
-        time.sleep(0.002)
+        # time.sleep(0.002)
         # do we need to wait for some time?
         # does this prepend MSG before the message?
 
