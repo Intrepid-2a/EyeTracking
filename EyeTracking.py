@@ -248,7 +248,7 @@ class EyeTracker:
         # print(self.colors)
 
     def setFixationTarget(self, fixationTarget):
-        if hasattr(fixationTarget, 'draw'):
+        if hasattr(fixationTarget, 'draw') and callable(fixationTarget.draw):
             if fixationTarget.win == self.psychopyWindow:
                 # seems good?
                 self.fixationTarget = fixationTarget
