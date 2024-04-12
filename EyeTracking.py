@@ -181,7 +181,15 @@ class EyeTracker:
                 if os.path.isdir(filefolder):
                     if isinstance(filename, str):
                         if len(filename) > 0:
-                            # CHECK IF FILE ALREADY EXISTS?
+
+                            # check if target file already exists:
+                            if len(glob(os.path.join(filefolder, filename + '.*'))):
+                                y = 1
+                                while len(glob(os.path.join(filefolder, filename + '_' + str(y) + '.*')):
+                                    y += 1
+                                filename = filename + '_' + str(y)
+                                print('NOTE: target eye-tracking data file already exists, changing to: '+filename)
+
                             self.storefiles  = True
                             self.filefolder  = filefolder
                             self.filename    = filename
