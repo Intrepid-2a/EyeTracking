@@ -1234,8 +1234,11 @@ class EyeTracker:
     def __EL_comment(self, comment):
         # based on this thread:
         # https://discourse.psychopy.org/t/eyelink-1000-output-file-doesnt-have-trial-or-event-information/25699
-        if self.__fileOpen:
-            self.tracker.sendMessage(comment)
+
+        #if self.__fileOpen:
+
+        self.tracker.sendMessage(comment)
+        
         # do we need to wait for some time?
         # does this prepend MSG before the message?
 
