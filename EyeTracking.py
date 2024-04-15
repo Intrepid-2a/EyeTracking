@@ -248,14 +248,25 @@ class EyeTracker:
         # print(self.colors)
 
     def setFixationTarget(self, fixationTarget):
-        if hasattr(fixationTarget, 'draw') and callable(fixationTarget.draw):
-            if fixationTarget.win == self.psychopyWindow:
-                # seems good?
-                self.fixationTarget = fixationTarget
+        if not fixationTarget == None:
+            print("checking fixationTarget:")
+            print(hasattr(fixationTarget, 'draw'))
+            print(callable(fixationTarget.draw))
+            print(fixationTarget.win == self.psychopyWindow)
+
+            if hasattr(fixationTarget, 'draw'): 
+                if callable(fixationTarget.draw):
+                    if fixationTarget.win == self.psychopyWindow:
+                        # seems good?
+                        self.fixationTarget = fixationTarget
+                    else:
+                        raise Warning("fixationTarget must be defined for 'psychopyWindow'")
+                else:
+                    raise Warning("fixationTarget.draw must be callable")
             else:
-                raise Warning("fixationTarget must be defined for the psychopyWindow")
+                raise Warning("fixationTarget must have a draw property")
         else:
-            raise Warning("fixationTarget must be a PsychoPy visual stimulus with the draw method")
+            pass # it's fine not to specify one?
 
 
     def setupEyeLink(self):
@@ -1223,7 +1234,7 @@ class EyeTracker:
             fixTimeout = self.fixTimeout
 
         if fixationTarget == None:
-            if hasattr(self, fixationTarget):
+            if hasattr(self, 'fixationTarget'):
                 fixation = self.fixationTarget
             else:
                 fixation = self.target
