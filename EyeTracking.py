@@ -446,7 +446,7 @@ class EyeTracker:
     def initialize(self):
         raise Warning("set a tracker before initializing it")
 
-    def __EL_initialize(self):
+    def __EL_initialize(self, calibrationScale=None):
         # print('initialize EyeLink')
 
         # # new code for pylink:
@@ -612,9 +612,29 @@ class EyeTracker:
         # this part might not be cool? otoh, we don't need that window any more... and it should not block the main window
         # self.__EL_window.close()
 
-    def setEyeLinkCalibrationScale(self):
+        self.__EL_setCalibrationScale(calibrationScale)
 
-        self.tracker.sendCommand("calibration_area_proportion", "0.35 0.35")
+    def __EL_setCalibrationScale(self, calibrationScale):
+        # default scale, from CALIBR.INI: "calibration_area_proportion 0.88 0.83"
+        if calibrationScale == None:
+            # use default from machine
+            return
+        
+        if isinstance(calibrationScale, (tuple, list)):
+            if len(calibrationScale) == 2:
+                if all([isinstance(x, numbers.Number) for x in calibrationScale]):
+                    if all([0.33 <= x <= 1.00 for x in calibrationScale]):
+                        # all good, do it:
+                        self.tracker.sendCommand("calibration_area_proportion", "%0.2f %0.2f"%(calibrationScale[0], calibrationScale[1]))
+                    else:
+                        raise Warning("values in calibrationScale must be in the range [0.33, 1.00]")
+                else:
+                    raise Warning("calibrationScale must contain only numbers")
+            else:
+                raise Warning("calibrationScale must be of length 2")
+        else:
+            raise Warning("calibrationScale must be a tuple or list")
+
         # self.tracker.sendCommand("calibration_corner_scaling", "1.00")
 
 
