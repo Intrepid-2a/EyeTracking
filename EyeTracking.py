@@ -663,7 +663,7 @@ class EyeTracker:
             if len(calibrationPoints) >= 3:
                 if all([isinstance(x, np.ndarray) and len(x) == 2 for x in calibrationPoints]):
                     if all([len(x) == 2 for x in calibrationPoints]):
-                        if all([all([isinstance(y, numbers.Number) for y in x]) for x in calibrationPoints])
+                        if all([all([isinstance(y, numbers.Number) for y in x]) for x in calibrationPoints]):
                             # seems more or less OK?
                             self.__calibrationTargets = calibrationPoints
                         else:
