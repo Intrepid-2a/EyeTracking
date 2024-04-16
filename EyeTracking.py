@@ -659,23 +659,27 @@ class EyeTracker:
                                    'offsetY'    : offsetY      }
 
         # these checks can be much simpler! but leave it be for now...
-        if isinstance(calibrationPoints, np.ndarray):
-            if len(calibrationPoints) >= 3:
-                if all([isinstance(x, np.ndarray) and len(x) == 2 for x in calibrationPoints]):
-                    if all([len(x) == 2 for x in calibrationPoints]):
-                        if all([all([isinstance(y, numbers.Number) for y in x]) for x in calibrationPoints]):
-                            # seems more or less OK?
-                            self.__calibrationTargets = calibrationPoints
+        if not calibrationPoints == None:
+
+            if isinstance(calibrationPoints, np.ndarray):
+                if len(calibrationPoints) >= 3:
+                    if all([isinstance(x, np.ndarray) and len(x) == 2 for x in calibrationPoints]):
+                        if all([len(x) == 2 for x in calibrationPoints]):
+                            if all([all([isinstance(y, numbers.Number) for y in x]) for x in calibrationPoints]):
+                                # seems more or less OK?
+                                self.__calibrationTargets = calibrationPoints
+                            else:
+                                raise Warning("all elements in calibrationPoints must be numeric")
                         else:
-                            raise Warning("all elements in calibrationPoints must be numeric")
+                            raise Warning("all rows in calibrationPoints must have 2 items")
                     else:
-                        raise Warning("all rows in calibrationPoints must have 2 items")
+                        raise Warning("all rows in calibrationPoints must be numpy.ndarray")
                 else:
-                    raise Warning("all rows in calibrationPoints must be numpy.ndarray")
+                    raise Warning("calibrationPoints must have at least 3 rows")
             else:
-                raise Warning("calibrationPoints must have at least 3 rows")
+                raise Warning("calibrationPoints must be a numpy.ndarray")
         else:
-            raise Warning("calibrationPoints must be a numpy.ndarray")
+            pass # can leave to be default!
 
 
     def __DM_initialize(self):
