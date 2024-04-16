@@ -658,7 +658,7 @@ class EyeTracker:
                                    'offsetX'    : offsetX,
                                    'offsetY'    : offsetY      }
 
-
+        # these checks can be much simpler! but leave it be for now...
         if isinstance(calibrationPoints, np.ndarray):
             if len(calibrationPoints) >= 3:
                 if all([isinstance(x, np.ndarray) and len(x) == 2 for x in calibrationPoints]):
@@ -676,6 +676,7 @@ class EyeTracker:
                 raise Warning("calibrationPoints must have at least 3 rows")
         else:
             raise Warning("calibrationPoints must be a numpy.ndarray")
+
 
     def __DM_initialize(self):
         print('initialize dummy mouse tracker')
