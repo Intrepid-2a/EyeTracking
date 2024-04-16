@@ -50,7 +50,7 @@ class EyeTracker:
                  samplemode=None,
                  calibrationpoints=5,
                  colors=None,
-                 fixationTarget=None):
+                 fixationStimuli=None):
 
 
         # the functions below check the user input,
@@ -68,7 +68,7 @@ class EyeTracker:
         self.setFixTimeout(fixTimeout)
         self.setFilePath(filefolder, filename)
         self.setSamplemode(samplemode)
-        self.setFixationTarget(fixationTarget)
+        self.setFixationStimuli(fixationStimuli)
 
         # things below this comment are still up for change... depends a bit on how the EyeLink does things
 
@@ -247,26 +247,27 @@ class EyeTracker:
 
         # print(self.colors)
 
-    def setFixationTarget(self, fixationTarget):
-        if not fixationTarget == None:
-            print("checking fixationTarget:")
-            print(hasattr(fixationTarget, 'draw'))
-            print(callable(fixationTarget.draw))
-            print(fixationTarget.win == self.psychopyWindow)
-
-            if hasattr(fixationTarget, 'draw'): 
-                if callable(fixationTarget.draw):
-                    if fixationTarget.win == self.psychopyWindow:
-                        # seems good?
-                        self.fixationTarget = fixationTarget
+    def setFixationStimuli(self, fixationStimuli):
+        if not fixationStimuli == None:
+            # make sur eit's a list:
+            if not isinstance(fixationStimuli, list):
+                fixationStimuli = [fixationStimuli]
+            for stim in fixationStimuli:
+                if hasattr(stim, 'draw'): 
+                    if callable(stim.draw):
+                        if stim.win == self.psychopyWindow:
+                            # seems good?
+                            pass
+                        else:
+                            raise Warning("fixationStimuli must be defined for 'psychopyWindow'")
                     else:
-                        raise Warning("fixationTarget must be defined for 'psychopyWindow'")
+                        raise Warning("fixationStimuli.draw must be callable")
                 else:
-                    raise Warning("fixationTarget.draw must be callable")
-            else:
-                raise Warning("fixationTarget must have a draw property")
+                    raise Warning("fixationStimuli must have a draw property")
+            # all good, store them:
+            self.fixationStimuli = fixationStimuli
         else:
-            pass # it's fine not to specify one?
+            pass # it's fine not to specify any
 
 
     def setupEyeLink(self):
@@ -1246,23 +1247,23 @@ class EyeTracker:
                  'right':['right'],
                  'average':['average']}[self.samplemode] )
 
-    def waitForFixation(self, minFixDur=None, fixTimeout=None, fixationTarget=None):
+    def waitForFixation(self, minFixDur=None, fixTimeout=None, fixationStimuli=None):
 
         if minFixDur == None:
             minFixDur = self.minFixDur
         if fixTimeout == None:
             fixTimeout = self.fixTimeout
 
-        if fixationTarget == None:
-            if hasattr(self, 'fixationTarget'):
-                fixation = self.fixationTarget
+        if fixationStimuli == None:
+            if hasattr(self, 'fixationStimuli'):
+                fixationStimuli = self.fixationStimuli
             else:
-                fixation = self.target
+                self.target.pos = [0,0]
+                fixationStimuli = [self.target]
         else:
-            # not checking if this is a correct object, leaving to caller:
-            fixation = fixationTarget
-
-        self.target.pos = [0,0]
+            if not isinstance(fixationStimuli, list):
+                fixationStimuli = [fixationStimuli]
+        
 
         # most the initially set values should be used, but we do 1 sanity check here:
         # if the initially set values are used, this should already be true:
@@ -1277,7 +1278,8 @@ class EyeTracker:
 
         while now < timeout:
 
-            fixation.draw()
+            for stim in fixationStimuli:
+                stim.draw()
             self.psychopyWindow.flip()
 
             now = time.time()
