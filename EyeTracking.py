@@ -639,7 +639,7 @@ class EyeTracker:
         # self.tracker.sendCommand("calibration_corner_scaling", "1.00")
 
 
-    def __LT_initialize(self):
+    def __LT_initialize(self, calibrationPoints=None):
         print('initialize LiveTrack')
         self.LiveTrack.Init()
 
@@ -650,15 +650,32 @@ class EyeTracker:
         self.LiveTrack.StartTracking()
         self.LiveTrack.SetTracking(leftEye=self.trackEyes[0],rightEye=self.trackEyes[1])
 
-        # do calibration... this needs to be rewritten...
-        # LTcal(cfg=cfg, trackLeftEye=trackLeftEye, trackRightEye=trackRightEye)
-
+        # what's this for?
         [ width, height, sampleRate, offsetX, offsetY ] = self.LiveTrack.GetCaptureConfig()
         self.__LiveTrackConfig = { 'width'      : width,
                                    'height'     : height,
                                    'sampleRate' : sampleRate,
                                    'offsetX'    : offsetX,
                                    'offsetY'    : offsetY      }
+
+
+        if isinstance(calibrationPoints, np.ndarray):
+            if len(calibrationPoints) >= 3:
+                if all([isinstance(x, np.ndarray) and len(x) == 2 for x in calibrationPoints]):
+                    if all([len(x) == 2 for x in calibrationPoints]):
+                        if all([all([isinstance(y, numbers.Number) for y in x]) for x in calibrationPoints])
+                            # seems more or less OK?
+                            self.__calibrationTargets = calibrationPoints
+                        else:
+                            raise Warning("all elements in calibrationPoints must be numeric")
+                    else:
+                        raise Warning("all rows in calibrationPoints must have 2 items")
+                else:
+                    raise Warning("all rows in calibrationPoints must be numpy.ndarray")
+            else:
+                raise Warning("calibrationPoints must have at least 3 rows")
+        else:
+            raise Warning("calibrationPoints must be a numpy.ndarray")
 
     def __DM_initialize(self):
         print('initialize dummy mouse tracker')
@@ -692,7 +709,7 @@ class EyeTracker:
 
         calTargets = copy.deepcopy(self.__calibrationTargets)
 
-        print(self.calibrationpoints)
+        # print(self.calibrationpoints)
 
         # midTarget = calTargets[0]
         # extTargets = calTargets[1:]
