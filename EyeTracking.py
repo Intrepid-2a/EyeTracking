@@ -20,6 +20,7 @@ import psychopy
 from psychopy import core, event, visual, gui, monitors
 
 from psychopy.tools import monitorunittools
+from psychopy.tools.coordinatetools import pol2cart, cart2pol
 from psychopy.hardware import keyboard
 from pyglet.window import key
 
@@ -1463,9 +1464,9 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
                     colors['red']    = [ 0.55, -1.00, -1.00]
                     colors['blue']   = [-1.00,  0.45, -1.00]
                 if location == 'toronto':
-                    colors['back']   = [ 0.5,   0.5,  -1.0 ]
-                    colors['red']    = [ 0.5,  -1.0,  -1.0 ]
-                    colors['blue']   = [-1.0,   0.5,  -1.0 ]
+                    colors['back']   = [ 0.55,  0.45, -1.0 ]
+                    colors['red']    = [ 0.55, -1.0,  -1.0 ]
+                    colors['blue']   = [-1.0,   0.45, -1.0 ]
             if glasses == 'RB':
                 # this should no longer be used:
                 print('are you sure about using RED/BLUE glasses?')
@@ -1481,7 +1482,10 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
 
     # for blind spot mapping, task == None, but it still needs the calibrated colors...
     # handle this in the function?
-    colors = getColors(colors=colors, task=task, ID=ID)
+
+    colors = getColors(colors=colors, 
+                       task=task, 
+                       ID=ID)
 
 
     # WINDOW OBJECT
@@ -1521,8 +1525,6 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
     if location == 'toronto':
         mymonitor.setGammaGrid(gammaGrid)
     mymonitor.setSizePix(resolution)
-
-
 
     #win = visual.Window([1000, 500], allowGUI=True, monitor='ccni', units='deg', fullscr=True, color = back_col, colorSpace = 'rgb')
     win = visual.Window(resolution, monitor=mymonitor, allowGUI=True, units='deg', fullscr=True, color=colors['back'], colorSpace = 'rgb', screen=screen)
@@ -1584,12 +1586,14 @@ def localizeSetup( trackEyes, filefolder, filename, location=None, glasses='RG',
              'fixation'         : fixation,
              'blindspotmarkers' : blindspotmarkers } )
 
-def getColors(colors, task, ID):
+def getColors(colors={}, task=None, ID=None):
 
     if task == None:
+        print('warning: task must be specified to read calibrated colors, skipping')
         return(colors)
 
     if ID == None:
+        print('warning: ID must be specified to read calibrated colors, skipping')
         return(colors)
 
     ## colour (eye) parameters
@@ -1597,20 +1601,26 @@ def getColors(colors, task, ID):
     if len(all_files) == 0:
         # no color calibration done, skip
         return(colors)
+
+    print('reading color calibration')
+    print(all_files)
+    print(all_files[-1])
     col_file = open(all_files[-1],'r')
     col_param = col_file.read().replace('\t','\n').split('\n')
     col_file.close()
-
+    print(col_param)
     # let's flip this depending on the task run, in each of the experiments?
     # col_ipsi = eval(col_param[3]) if hemifield == 'left' else eval(col_param[5]) # left or right
     # col_cont = eval(col_param[5]) if hemifield == 'left' else eval(col_param[3]) # right or left
 
     # so use the left / right things for now
-    colors['left']  = col_param[3]
-    colors['right'] = col_param[5]
+    colors['left']  = eval(col_param[3])
+    colors['right'] = eval(col_param[5])
 
-    # both should be defined in 1 way... up for grabs how, afaic
+    # 'both' should be defined in 1 way... up for grabs how, afaic
     # colors['both']  = [-0.7, -0.7, -0.7] # from 2nd FBE version of the distance task
+
+    # this comes down to black in ALL cases:
     colors['both']  = [eval(col_param[3])[1], eval(col_param[5])[0], -1]
 
     return(colors)
@@ -1627,25 +1637,32 @@ def makeBlindSpotMarkers(win, task, ID, colors):
 
     main_path = '../data/' + task + '/'
     
-    ## blindspot parameters
-    bs_file = open(glob(main_path + 'mapping/' + ID + '_LH_blindspot*.txt')[-1], 'r')
-    bs_param = bs_file.read().replace('\t','\n').split('\n')
-    bs_file.close()
-    spot_left_cart = eval(bs_param[1])
-    spot_left = cart2pol(spot_left_cart[0], spot_left_cart[1])
-    spot_left_size = eval(bs_param[3])
+    hemifields = []
 
-    bs_file = open(glob(main_path + 'mapping/' + ID + '_RH_blindspot*.txt')[-1],'r')
-    bs_param = bs_file.read().replace('\t','\n').split('\n')
-    bs_file.close()
-    spot_righ_cart = eval(bs_param[1])
-    spot_righ = cart2pol(spot_righ_cart[0], spot_righ_cart[1])
-    spot_righ_size = eval(bs_param[3])
+    ## read blindspot parameters... if any...
+    if len(glob(main_path + 'mapping/' + ID + '_LH_blindspot*.txt')):
+        bs_file = open(glob(main_path + 'mapping/' + ID + '_LH_blindspot*.txt')[-1], 'r')
+        bs_param = bs_file.read().replace('\t','\n').split('\n')
+        bs_file.close()
+        spot_left_cart = eval(bs_param[1])
+        spot_left = cart2pol(spot_left_cart[0], spot_left_cart[1])
+        spot_left_size = eval(bs_param[3])
+        hemifields.append('left')
 
+    if len(glob(main_path + 'mapping/' + ID + '_RH_blindspot*.txt')):
+        bs_file = open(glob(main_path + 'mapping/' + ID + '_RH_blindspot*.txt')[-1],'r')
+        bs_param = bs_file.read().replace('\t','\n').split('\n')
+        bs_file.close()
+        spot_righ_cart = eval(bs_param[1])
+        spot_righ = cart2pol(spot_righ_cart[0], spot_righ_cart[1])
+        spot_righ_size = eval(bs_param[3])
+        hemifields.append('right')
+
+    print(hemifields)
 
     blindspotmarkers = {}
     
-    for hemifield in ['left','right']:
+    for hemifield in hemifields:
 
         if hemifield == 'left':
             spot_cart = spot_left_cart
@@ -1671,6 +1688,8 @@ def makeBlindSpotMarkers(win, task, ID, colors):
         # set autodraw only on the one used in the task
 
         blindspotmarkers[hemifield] = blindspot
+
+    print(len(blindspotmarkers))
 
     return(blindspotmarkers)
 
